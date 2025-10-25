@@ -35,7 +35,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 12px;
   background: transparent;
   border: none;
@@ -43,10 +43,11 @@
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.2s;
-  font-size: 14px;
+  font-size: 13px;
   margin-bottom: 4px;
   text-align: left;
   justify-content: flex-start;
+  white-space: nowrap;
 }
 
 .sidebar-btn:hover {
