@@ -574,12 +574,22 @@ app.get('/api/health', (req, res) => {
 });
 
 // Domain verification endpoint (for custom domains)
-// Replace the path and content with your verification values from Render
 app.get('/.well-known/acme-challenge/:token', (req, res) => {
-  // PASTE YOUR VERIFICATION CONTENT HERE
+  // Copy the FULL content string from Render's "Content" field and paste it here:
   const verificationContent = 'dh=b507b84af8537c7c25bfd2940f6c8e1';
   res.type('text/plain');
   res.send(verificationContent);
+});
+
+// Catch-all for any other verification paths
+app.get('*', (req, res, next) => {
+  // If request is for a verification file, return the content
+  if (req.path.includes('aura-streaming-1')) {
+    res.type('text/plain');
+    res.send('dh=b507b84af8537c7c25bfd2940f6c8e1');
+  } else {
+    next();
+  }
 });
 
 // Get server info
