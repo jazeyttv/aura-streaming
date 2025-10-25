@@ -95,7 +95,7 @@
 
 .channel-info {
   flex: 1;
-  padding-top: 40px; /* Push down to compensate for avatar overlap */
+  padding-top: 80px; /* Push down way more to compensate for avatar overlap */
 }
 
 .channel-name-row {
@@ -186,7 +186,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-top: 40px; /* Align with username/info */
+  padding-top: 80px; /* Align with username/info */
 }
 
 .btn-channel-action {
