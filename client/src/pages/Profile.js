@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { User, Calendar, Edit, Heart, Shield, Crown, CheckCircle, Bell, Settings } from 'lucide-react';
+import io from 'socket.io-client';
+import { User, Calendar, Edit, Heart, Shield, Crown, CheckCircle, Bell, Settings, Send } from 'lucide-react';
+import { SOCKET_URL } from '../config';
 import './Profile.css';
 
 const Profile = () => {
@@ -22,6 +24,16 @@ const Profile = () => {
     banner: ''
   });
 
+  // Chat state
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatMessage, setChatMessage] = useState('');
+  const socketRef = useRef(null);
+  const chatEndRef = useRef(null);
+
+  // Bio editing state
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bioText, setBioText] = useState('');
+
   const isOwnProfile = currentUser?.username === username;
 
   useEffect(() => {
@@ -33,6 +45,39 @@ const Profile = () => {
       checkFollowing();
     }
   }, [currentUser, isOwnProfile, profile?.id]);
+
+  // Chat useEffect - connect to global chat room for this profile
+  useEffect(() => {
+    if (activeTab === 'chat' && profile) {
+      // Connect to Socket.IO
+      socketRef.current = io(SOCKET_URL);
+      const roomName = `profile_${profile.username}`;
+
+      socketRef.current.emit('join-profile-chat', roomName);
+
+      socketRef.current.on('profile-chat-message', (msg) => {
+        setChatMessages(prev => [...prev, msg]);
+      });
+
+      socketRef.current.on('profile-chat-history', (history) => {
+        setChatMessages(history);
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.emit('leave-profile-chat', roomName);
+          socketRef.current.disconnect();
+        }
+      };
+    }
+  }, [activeTab, profile]);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   const fetchProfile = async () => {
     try {
@@ -109,21 +154,23 @@ const Profile = () => {
     if (profile?.isPartner) {
       badges.push(
         <span key="partner" className="channel-badge badge-partner" title="Verified Partner">
-          <CheckCircle size={14} fill="currentColor" />
+          <CheckCircle size={18} fill="currentColor" />
         </span>
       );
     }
     
     if (profile?.role === 'admin') {
       badges.push(
-        <span key="admin" className="channel-badge badge-admin" title="Administrator">
-          <Crown size={14} />
+        <span key="admin" className="channel-badge badge-admin" title="Staff">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+          </svg>
         </span>
       );
     } else if (profile?.role === 'moderator') {
       badges.push(
         <span key="mod" className="channel-badge badge-moderator" title="Moderator">
-          <Shield size={14} />
+          <Shield size={18} />
         </span>
       );
     }

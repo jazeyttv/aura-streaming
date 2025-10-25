@@ -2,8 +2,8 @@
 .channel-page {
   min-height: 100vh;
   background: #0E0E12;
-  margin-top: -80px; /* Offset the page-container padding */
-  padding-top: 80px; /* Add it back so banner shows below navbar */
+  padding-top: 0;
+  margin-top: 0;
 }
 
 /* Channel Banner */
@@ -16,6 +16,7 @@
   position: relative;
   border-bottom: 1px solid #2a2a2a;
   margin-top: 0;
+  margin-bottom: -80px; /* Pull header up to overlap banner */
 }
 
 .offline-badge,
@@ -119,24 +120,32 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: auto;
+  height: auto;
+  background: none !important; /* NO BACKGROUND */
+}
+
+.channel-badge svg {
+  display: block;
+  background: none !important;
 }
 
 .channel-badge.badge-partner {
   color: #00ffff;
-  filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.5));
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+  background: none !important;
 }
 
 .channel-badge.badge-admin {
-  color: #ff4444;
-  filter: drop-shadow(0 0 8px rgba(255, 68, 68, 0.5));
+  color: #00ffff; /* Cyan wrench for staff */
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+  background: none !important;
 }
 
 .channel-badge.badge-moderator {
-  color: #4444ff;
-  filter: drop-shadow(0 0 8px rgba(68, 68, 255, 0.5));
+  color: #00ffff; /* Cyan shield for moderator */
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+  background: none !important;
 }
 
 .channel-stats {

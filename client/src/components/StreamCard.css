@@ -161,11 +161,11 @@
 }
 
 .stream-card-badge.admin {
-  filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.5));
+  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.6));
 }
 
 .stream-card-badge.mod {
-  filter: drop-shadow(0 0 4px rgba(68, 68, 255, 0.5));
+  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.6));
 }
 
 .stream-card-category {

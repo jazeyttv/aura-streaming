@@ -171,19 +171,24 @@
 }
 
 .streamer-name-kick .badge-partner {
-  background: linear-gradient(135deg, #B300FF, #7b2cbf);
+  background: none !important; /* NO BACKGROUND */
   color: #00FFFF;
-  border: 1.5px solid #00FFFF;
-  box-shadow: 0 0 16px rgba(0, 255, 255, 0.6);
-  font-weight: 900;
+  border: none;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
 }
 
 .streamer-name-kick .badge-admin {
-  background: linear-gradient(135deg, #FF0000, #cc0000);
-  color: #FFFFFF;
-  border: 1.5px solid #ff4444;
-  box-shadow: 0 0 16px rgba(255, 0, 0, 0.5);
-  font-weight: 900;
+  background: none !important; /* NO BACKGROUND */
+  color: #00FFFF; /* Cyan wrench */
+  border: none;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
+}
+
+.streamer-name-kick .badge-moderator {
+  background: none !important; /* NO BACKGROUND */
+  color: #00FFFF; /* Cyan shield */
+  border: none;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
 }
 
 .stream-title-kick {
@@ -487,25 +492,37 @@
 }
 
 .badge-partner {
-  background: linear-gradient(135deg, #7b2cbf, #5a189a);
+  background: none !important; /* NO BACKGROUND */
   color: #00ffff;
-  border: 1px solid #00ffff;
-  box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
-  padding: 3px 6px;
+  border: none;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .badge-admin {
-  background: linear-gradient(135deg, #ff0000, #cc0000);
-  color: #fff;
-  border: 1px solid #ff4444;
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+  background: none !important; /* NO BACKGROUND */
+  color: #00ffff; /* Cyan wrench */
+  border: none;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-admin svg {
+  display: block;
 }
 
 .badge-moderator {
-  background: linear-gradient(135deg, #4444ff, #3333cc);
-  color: #fff;
-  border: 1px solid #6666ff;
-  box-shadow: 0 0 10px rgba(68, 68, 255, 0.3);
+  background: none !important; /* NO BACKGROUND */
+  color: #00ffff; /* Cyan shield */
+  border: none;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .badge-streamer {
