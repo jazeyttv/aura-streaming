@@ -5,6 +5,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { User, Calendar, Edit, Heart, Shield, Crown, CheckCircle, Bell, Settings, Send } from 'lucide-react';
 import { SOCKET_URL } from '../config';
+import { getBadgeById } from '../config/badges';
 import './Profile.css';
 
 const Profile = () => {
@@ -160,6 +161,7 @@ const Profile = () => {
       userId: currentUser.id,
       chatColor: currentUser.chatColor,
       isPartner: currentUser.isPartner,
+      selectedBadge: currentUser.selectedBadge,
       timestamp: new Date()
     };
 
@@ -192,6 +194,22 @@ const Profile = () => {
 
   const getRoleBadges = () => {
     const badges = [];
+    
+    // Custom Badge (if user has one selected)
+    if (profile?.selectedBadge) {
+      const customBadge = getBadgeById(profile.selectedBadge);
+      if (customBadge) {
+        badges.push(
+          <span key="custom" className="channel-badge badge-custom" title={customBadge.name}>
+            <img 
+              src={customBadge.imageUrl} 
+              alt={customBadge.name}
+              style={{ width: '20px', height: '20px', display: 'block' }}
+            />
+          </span>
+        );
+      }
+    }
     
     if (profile?.isPartner) {
       badges.push(
@@ -507,6 +525,17 @@ const Profile = () => {
                           style={{ color: msg.chatColor || '#00d9ff' }}
                         >
                           {msg.username}
+                          {msg.selectedBadge && (() => {
+                            const customBadge = getBadgeById(msg.selectedBadge);
+                            return customBadge ? (
+                              <img 
+                                src={customBadge.imageUrl} 
+                                alt={customBadge.name}
+                                title={customBadge.name}
+                                style={{ width: '14px', height: '14px', marginLeft: '4px', verticalAlign: 'middle' }}
+                              />
+                            ) : null;
+                          })()}
                           {msg.isPartner && (
                             <CheckCircle 
                               size={12} 

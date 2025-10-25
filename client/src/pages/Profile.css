@@ -95,14 +95,15 @@
 
 .channel-info {
   flex: 1;
-  padding-top: 0; /* Align with avatar */
+  padding-top: 40px; /* Push down to compensate for avatar overlap */
 }
 
 .channel-name-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .channel-name {
@@ -116,6 +117,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 8px;
+  width: 100%;
 }
 
 .channel-badge {
@@ -183,7 +186,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-top: 0; /* Align with info */
+  padding-top: 40px; /* Align with username/info */
 }
 
 .btn-channel-action {
