@@ -250,24 +250,6 @@ const userSchema = new mongoose.Schema({
       default: false
     }
   },
-  // Channel Points
-  channelPoints: {
-    type: Number,
-    default: 0
-  },
-  // Subscriber Status
-  isSubscriber: {
-    type: Boolean,
-    default: false
-  },
-  subscribedTo: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
-  subscribers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
   createdAt: {
     type: Date,
     default: Date.now
