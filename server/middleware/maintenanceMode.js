@@ -14,10 +14,8 @@ const maintenanceMode = async (req, res, next) => {
     return next();
   }
 
-  // Allow auth routes (login/register) but ONLY the API endpoints
-  if (req.path === '/api/auth/login' || 
-      req.path === '/api/auth/register' || 
-      req.path === '/api/auth/admin-login') {
+  // Allow ONLY admin login during maintenance
+  if (req.path === '/api/auth/admin-login') {
     return next();
   }
 

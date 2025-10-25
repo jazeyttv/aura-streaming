@@ -488,35 +488,18 @@ const Admin = () => {
         <div className="admin-section maintenance-section">
           <div className="section-header">
             <h2>🔧 Website Maintenance</h2>
-            <label className="maintenance-toggle">
-              <input
-                type="checkbox"
-                checked={maintenanceMode.enabled}
-                onChange={toggleMaintenance}
-                disabled={maintenanceLoading}
-              />
-              <span className="toggle-slider"></span>
-              <span className="toggle-label">
-                {maintenanceMode.enabled ? 'ENABLED - Only admins can access' : 'DISABLED - Site is public'}
-              </span>
-            </label>
+            <button 
+              className={`btn-maintenance ${maintenanceMode.enabled ? 'active' : ''}`}
+              onClick={toggleMaintenance}
+              disabled={maintenanceLoading}
+            >
+              {maintenanceLoading ? '⏳ Processing...' : maintenanceMode.enabled ? '🔴 DISABLE Maintenance' : '🟢 ENABLE Maintenance'}
+            </button>
           </div>
           
-          <div className="maintenance-message">
-            <label>Maintenance Message:</label>
-            <input
-              type="text"
-              value={maintenanceMode.message}
-              onChange={(e) => setMaintenanceMode({ ...maintenanceMode, message: e.target.value })}
-              placeholder="Message to show users"
-              disabled={maintenanceLoading}
-            />
-            <small>This message will be displayed to users when maintenance mode is enabled.</small>
-          </div>
-
           {maintenanceMode.enabled && (
             <div className="maintenance-warning">
-              ⚠️ <strong>MAINTENANCE MODE ACTIVE!</strong> Only admins can access the website.
+              ⚠️ <strong>MAINTENANCE MODE ACTIVE!</strong> Website is locked. Only admins can access.
             </div>
           )}
         </div>

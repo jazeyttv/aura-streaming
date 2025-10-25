@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import axios from 'axios';
 import VersionChecker from './VersionChecker';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -14,16 +15,42 @@ import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import ChannelActions from './pages/ChannelActions';
 import PrivateRoute from './components/PrivateRoute';
+import MaintenancePage from './components/MaintenancePage';
 import './App.css';
 
-function App() {
+function AppContent() {
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Add axios interceptor to check for maintenance mode
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 503 && error.response?.data?.maintenance) {
+          // Check if user is admin
+          if (!user || user.role !== 'admin') {
+            setMaintenanceMode(true);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [user]);
+
+  // Show maintenance page for non-admins
+  if (maintenanceMode && (!user || user.role !== 'admin')) {
+    return <MaintenancePage />;
+  }
+
   return (
-    <AuthProvider>
-      <VersionChecker />
-      <Router>
-        <div className="App">
-          <Navbar />
-          <Routes>
+    <div className="App">
+      <Navbar />
+      <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -65,6 +92,15 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <VersionChecker />
+      <Router>
+        <AppContent />
       </Router>
     </AuthProvider>
   );
