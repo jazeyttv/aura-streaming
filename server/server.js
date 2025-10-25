@@ -230,34 +230,74 @@ io.on('connection', (socket) => {
   });
 
   // Handle chat messages with role
-  socket.on('chat-message', ({ streamId, username, message, userId, userRole, isPartner, chatColor }) => {
-    const bannedInStream = global.bannedUsers.get(streamId);
-    if (bannedInStream && bannedInStream.has(userId)) {
-      socket.emit('error-message', { message: 'You are banned from chatting' });
-      return;
-    }
+  socket.on('chat-message', async ({ streamId, username, message, userId, userRole, isPartner, chatColor, channelName }) => {
+    try {
+      // Check in-memory bans first (backwards compatibility)
+      const bannedInStream = global.bannedUsers.get(streamId);
+      if (bannedInStream && bannedInStream.has(userId)) {
+        socket.emit('error-message', { message: 'You are banned from chatting' });
+        return;
+      }
 
-    const chatMessage = {
-      id: Date.now() + Math.random(),
-      username,
-      message,
-      userId,
-      userRole: userRole || 'user',
-      isPartner: isPartner || false,
-      chatColor: chatColor || '#FFFFFF',
-      timestamp: new Date()
-    };
-    
-    if (!global.chatMessages.has(streamId)) {
-      global.chatMessages.set(streamId, []);
+      // Check database bans and timeouts if MongoDB is available
+      if (global.mongoose && global.mongoose.connection && global.mongoose.connection.readyState === 1) {
+        const ChatBan = require('./models/ChatBan');
+        const ChatTimeout = require('./models/ChatTimeout');
+        const User = require('./models/User');
+        
+        // Get channel ID from channelName
+        if (channelName) {
+          const channel = await User.findOne({ username: channelName });
+          if (channel) {
+            // Check for permanent ban
+            const ban = await ChatBan.findOne({ userId, channelId: channel._id });
+            if (ban) {
+              socket.emit('error-message', { message: `You are banned from this chat. Reason: ${ban.reason}` });
+              return;
+            }
+            
+            // Check for active timeout
+            const timeout = await ChatTimeout.findOne({ 
+              userId, 
+              channelId: channel._id,
+              expiresAt: { $gt: new Date() }
+            });
+            if (timeout) {
+              const remainingSeconds = Math.ceil((timeout.expiresAt - new Date()) / 1000);
+              socket.emit('error-message', { 
+                message: `You are timed out for ${remainingSeconds} seconds. Reason: ${timeout.reason}` 
+              });
+              return;
+            }
+          }
+        }
+      }
+
+      const chatMessage = {
+        id: Date.now() + Math.random(),
+        username,
+        message,
+        userId,
+        userRole: userRole || 'user',
+        isPartner: isPartner || false,
+        chatColor: chatColor || '#FFFFFF',
+        timestamp: new Date()
+      };
+      
+      if (!global.chatMessages.has(streamId)) {
+        global.chatMessages.set(streamId, []);
+      }
+      global.chatMessages.get(streamId).push(chatMessage);
+      
+      if (global.chatMessages.get(streamId).length > 200) {
+        global.chatMessages.get(streamId).shift();
+      }
+      
+      io.to(streamId).emit('chat-message', chatMessage);
+    } catch (error) {
+      console.error('Chat message error:', error);
+      socket.emit('error-message', { message: 'Failed to send message' });
     }
-    global.chatMessages.get(streamId).push(chatMessage);
-    
-    if (global.chatMessages.get(streamId).length > 200) {
-      global.chatMessages.get(streamId).shift();
-    }
-    
-    io.to(streamId).emit('chat-message', chatMessage);
   });
 
   socket.on('delete-message', ({ streamId, messageId, userId }) => {
@@ -438,6 +478,7 @@ app.use('/api/schedule', require('./routes/schedule')); // Stream schedule
 app.use('/api/panels', require('./routes/panels')); // Channel panels
 app.use('/api/followers', require('./routes/followers')); // Followers/Following lists
 app.use('/api/chat-settings', require('./routes/chatSettings')); // Chat mode settings
+app.use('/api/chat-moderation', require('./routes/chatModeration')); // Chat moderation
 
 // Health check
 app.get('/api/health', (req, res) => {
