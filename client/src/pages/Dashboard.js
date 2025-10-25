@@ -47,6 +47,12 @@ const Dashboard = () => {
     fetchActiveStream();
     fetchFollowerCount();
 
+    // Poll for updates every 5 seconds
+    const pollInterval = setInterval(() => {
+      fetchActiveStream();
+      fetchFollowerCount();
+    }, 5000);
+
     // Connect to Socket.IO
     socketRef.current = io(SOCKET_URL);
 
@@ -71,14 +77,13 @@ const Dashboard = () => {
 
     socketRef.current.on('viewer-count', ({ streamId, count }) => {
       console.log('[DASHBOARD] Viewer count update:', { streamId, count });
-      if (activeStream && (activeStream.id === streamId || activeStream._id === streamId)) {
-        setViewerCount(count);
-      }
+      setViewerCount(count);
     });
 
-    // Join the user's room for updates
-    if (user && user.id) {
-      socketRef.current.emit('join-room', `user-${user.id}`);
+    // Join the user's stream room for real-time updates
+    if (user && user.username) {
+      socketRef.current.emit('join-stream', user.username);
+      console.log('[DASHBOARD] Joined stream room:', user.username);
     }
 
     return () => {
@@ -88,8 +93,11 @@ const Dashboard = () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
     };
-  }, [user, navigate, activeStream]);
+  }, [user, navigate]);
 
   // Timer for session time
   useEffect(() => {
