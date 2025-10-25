@@ -173,6 +173,24 @@ const Admin = () => {
     }
   };
 
+  const handleChangeRole = async (userId, username, newRole) => {
+    if (username === 'Jazey' && newRole !== 'admin') {
+      alert('Cannot change the main admin role!');
+      return;
+    }
+    
+    if (!window.confirm(`Change ${username}'s role to ${newRole.toUpperCase()}?`)) return;
+
+    try {
+      await axios.put(`/api/admin/users/${userId}/role`, { role: newRole });
+      await fetchUsers();
+      alert(`✅ ${username} is now a ${newRole}!`);
+    } catch (error) {
+      console.error('Error changing role:', error);
+      alert('Failed to change role');
+    }
+  };
+
   const handleTogglePartner = async (userId, currentStatus) => {
     const action = currentStatus ? 'remove partner status from' : 'make partner';
     if (!window.confirm(`Are you sure you want to ${action} this user?`)) return;
@@ -426,7 +444,18 @@ const Admin = () => {
                       </div>
                     </td>
                     <td>{u.email}</td>
-                    <td>{getRoleBadge(u.role)}</td>
+                    <td>
+                      <select
+                        className="role-dropdown"
+                        value={u.role}
+                        onChange={(e) => handleChangeRole(u.id || u._id, u.username, e.target.value)}
+                        disabled={u.username === 'Jazey'} // Prevent changing main admin
+                      >
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
                     <td>
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {u.isStreamer ? (
