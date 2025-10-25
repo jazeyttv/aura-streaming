@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Key, Bell, Shield, Save, Share2, Clock } from 'lucide-react';
+import { User, Key, Bell, Shield, Save, Share2, Clock, Layout } from 'lucide-react';
 import axios from 'axios';
 import { getBadgeById } from '../config/badges';
 import ScheduleEditor from '../components/ScheduleEditor';
+import PanelsEditor from '../components/PanelsEditor';
 import './Settings.css';
 
 const Settings = () => {
@@ -231,6 +232,14 @@ const Settings = () => {
             >
               <Clock size={18} />
               <span>Stream Schedule</span>
+            </button>
+            
+            <button
+              className={`settings-nav-item ${activeTab === 'panels' ? 'active' : ''}`}
+              onClick={() => setActiveTab('panels')}
+            >
+              <Layout size={18} />
+              <span>Channel Panels</span>
             </button>
             
             <button
@@ -537,6 +546,12 @@ const Settings = () => {
           {activeTab === 'schedule' && (
             <div className="settings-section">
               <ScheduleEditor username={user.username} />
+            </div>
+          )}
+
+          {activeTab === 'panels' && (
+            <div className="settings-section">
+              <PanelsEditor username={user.username} />
             </div>
           )}
 
