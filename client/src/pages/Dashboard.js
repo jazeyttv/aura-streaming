@@ -309,10 +309,6 @@ const Dashboard = () => {
             <Activity size={18} />
             <span>Dashboard</span>
           </button>
-          <button className="sidebar-btn" onClick={() => navigate('/channel-actions')}>
-            <Zap size={18} />
-            <span>Channel Actions</span>
-          </button>
           <button className="sidebar-btn" onClick={() => navigate('/settings')}>
             <SettingsIcon size={18} />
             <span>Settings</span>
@@ -324,6 +320,10 @@ const Dashboard = () => {
           <button className="sidebar-btn" onClick={() => navigate(`/profile/${user.username}`)}>
             <Monitor size={18} />
             <span>My Channel</span>
+          </button>
+          <button className="sidebar-btn" onClick={() => navigate('/channel-actions')}>
+            <Zap size={18} />
+            <span>Channel Actions</span>
           </button>
           {user.role === 'admin' && (
             <button className="sidebar-btn" onClick={() => navigate('/admin')}>
