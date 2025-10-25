@@ -138,7 +138,8 @@ router.post('/register', async (req, res) => {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const streamKey = isStreamer ? `sk_${uuidv4().replace(/-/g, '')}` : null;
+      // EVERYONE gets a stream key automatically - no exceptions!
+      const streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
       
       const newUser = {
         id: uuidv4(),
@@ -148,10 +149,10 @@ router.post('/register', async (req, res) => {
         displayName: username,
         bio: '',
         avatar: '',
-        isStreamer: isStreamer || false,
+        isStreamer: true, // Everyone is a streamer by default
         role: 'user',
         streamKey,
-        rtmpUrl: streamKey ? 'rtmp://localhost:1935/live' : '',
+        rtmpUrl: 'rtmp://72.23.212.188:1935/live',
         isBanned: false,
         bannedUntil: null,
         followers: [],
@@ -193,17 +194,18 @@ router.post('/register', async (req, res) => {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const streamKey = isStreamer ? `sk_${uuidv4().replace(/-/g, '')}` : null;
+      // EVERYONE gets a stream key automatically - no exceptions!
+      const streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
 
       const user = new User({
         username,
         email,
         password: hashedPassword,
         displayName: username,
-        isStreamer: isStreamer || false,
+        isStreamer: true, // Everyone is a streamer by default
         role: 'user',
         streamKey,
-        rtmpUrl: streamKey ? 'rtmp://localhost:1935/live' : ''
+        rtmpUrl: 'rtmp://72.23.212.188:1935/live'
       });
 
       await user.save();
@@ -348,6 +350,14 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
 
+      // AUTO-FIX: If user doesn't have a stream key, create one now (for old accounts)
+      if (!user.streamKey) {
+        user.streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
+        user.isStreamer = true;
+        user.rtmpUrl = 'rtmp://72.23.212.188:1935/live';
+        console.log(`[LOGIN] ✅ Auto-generated stream key for ${user.username}`);
+      }
+
       const token = jwt.sign(
         { userId: user.id, username: user.username, role: user.role },
         process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_this_in_production',
@@ -394,6 +404,15 @@ router.post('/login', async (req, res) => {
 
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid credentials' });
+      }
+
+      // AUTO-FIX: If user doesn't have a stream key, create one now (for old accounts)
+      if (!user.streamKey) {
+        user.streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
+        user.isStreamer = true;
+        user.rtmpUrl = 'rtmp://72.23.212.188:1935/live';
+        await user.save(); // Save to MongoDB
+        console.log(`[LOGIN] ✅ Auto-generated stream key for ${user.username}`);
       }
 
       const token = jwt.sign(
