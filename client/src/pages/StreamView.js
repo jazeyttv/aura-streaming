@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
 import UserCard from '../components/UserCard';
+import ModTools from '../components/ModTools';
 import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
 import './StreamView.css';
@@ -25,6 +26,9 @@ const StreamView = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [selectedUsername, setSelectedUsername] = useState(null);
+  const [showModTools, setShowModTools] = useState(false);
+  const [modTargetUser, setModTargetUser] = useState(null);
+  const [channelMods, setChannelMods] = useState([]);
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -87,7 +91,25 @@ const StreamView = () => {
     });
 
     socketRef.current.on('error-message', ({ message }) => {
-      alert(message);
+      const errorMsg = {
+        id: Date.now(),
+        username: 'System',
+        message: message,
+        userRole: 'error',
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, errorMsg]);
+    });
+
+    socketRef.current.on('system-message', ({ message, username }) => {
+      const systemMsg = {
+        id: Date.now(),
+        username: username || 'System',
+        message: message,
+        userRole: 'system',
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, systemMsg]);
     });
 
     return () => {
@@ -116,13 +138,14 @@ const StreamView = () => {
       setChatMessages(response.data.chatMessages || []);
       setLoading(false);
       
-      // Fetch follower count for the streamer
+      // Fetch follower count and moderators for the streamer
       if (response.data.stream?.streamerUsername) {
         try {
           const userResponse = await axios.get(`/api/users/${response.data.stream.streamerUsername}`);
           setFollowerCount(userResponse.data.followers || 0);
+          setChannelMods(userResponse.data.moderators || []);
         } catch (err) {
-          console.error('Error fetching follower count:', err);
+          console.error('Error fetching streamer data:', err);
         }
       }
     } catch (error) {
@@ -201,7 +224,8 @@ const StreamView = () => {
       userRole: user.role || 'user',
       isPartner: user.isPartner || false,
       selectedBadge: user.selectedBadge || null,
-      chatColor: user.chatColor || '#FFFFFF'
+      chatColor: user.chatColor || '#FFFFFF',
+      channelName: stream?.streamerUsername || stream?.streamer?.username
     });
 
     setMessageInput('');
@@ -252,7 +276,7 @@ const StreamView = () => {
     }
   };
 
-  const getRoleBadge = (role, isStreamer = false, isPartner = false, selectedBadge = null) => {
+  const getRoleBadge = (role, isStreamer = false, isPartner = false, selectedBadge = null, userId = null) => {
     const badges = [];
     
     // Custom Badge (if user has one selected) - Show FIRST
@@ -290,6 +314,13 @@ const StreamView = () => {
     } else if (role === 'moderator') {
       badges.push(
         <span key="mod" className="badge badge-moderator" title="Moderator">
+          <Shield size={14} />
+        </span>
+      );
+    } else if (userId && channelMods.includes(userId)) {
+      // Channel-specific moderator
+      badges.push(
+        <span key="channel-mod" className="badge badge-moderator" title="Channel Moderator">
           <Shield size={14} />
         </span>
       );
@@ -464,8 +495,9 @@ const StreamView = () => {
               <>
                 {chatMessages.map((msg) => {
                   const isMessageFromStreamer = stream && (msg.userId === stream.streamer._id || msg.userId === stream.streamer);
-                  const canModerate = (isModerator || isStreamCreator) && msg.userRole !== 'system';
-                  const canBan = (isAdmin || isStreamCreator) && msg.userId !== user?.id;
+                  const isChannelMod = user && channelMods.includes(user.id);
+                  const canModerate = (isModerator || isStreamCreator || isChannelMod) && msg.userRole !== 'system' && msg.userRole !== 'error';
+                  const canBan = (isAdmin || isStreamCreator || isChannelMod) && msg.userId !== user?.id;
                   
                   return (
                     <div 
@@ -475,10 +507,17 @@ const StreamView = () => {
                       <span 
                         className="chat-username clickable-username" 
                         style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}
-                        onClick={() => setSelectedUsername(msg.username)}
+                        onClick={() => {
+                          if (canModerate && msg.userRole !== 'system' && msg.userRole !== 'error') {
+                            setModTargetUser({ _id: msg.userId, username: msg.username });
+                            setShowModTools(true);
+                          } else {
+                            setSelectedUsername(msg.username);
+                          }
+                        }}
                       >
                         {msg.username}
-                        {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge)}
+                        {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge, msg.userId)}
                       </span>
                       <span className="chat-text">{msg.message}</span>
                       {canModerate && (
@@ -546,6 +585,18 @@ const StreamView = () => {
         <UserCard 
           username={selectedUsername} 
           onClose={() => setSelectedUsername(null)} 
+        />
+      )}
+
+      {/* Mod Tools */}
+      {showModTools && modTargetUser && (
+        <ModTools
+          targetUser={modTargetUser}
+          channelName={stream?.streamerUsername || stream?.streamer?.username}
+          onClose={() => {
+            setShowModTools(false);
+            setModTargetUser(null);
+          }}
         />
       )}
     </div>
