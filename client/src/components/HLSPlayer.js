@@ -19,39 +19,58 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
     if (Hls.isSupported()) {
       console.log('✅ HLS.js is supported');
       
-      // Create new HLS instance
+      // Create new HLS instance with ULTRA OPTIMIZED settings
       const hls = new Hls({
         debug: false,
         enableWorker: true,
         lowLatencyMode: true,
-        backBufferLength: 90,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 60,
-        maxBufferSize: 60 * 1000 * 1000,
-        maxBufferHole: 0.5,
-        highBufferWatchdogPeriod: 2,
-        nudgeOffset: 0.1,
-        nudgeMaxRetry: 3,
-        maxFragLookUpTolerance: 0.25,
-        liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 10,
-        liveDurationInfinity: false,
-        liveBackBufferLength: 0,
-        maxLiveSyncPlaybackRate: 1.5,
-        testBandwidth: true,
+        
+        // AGGRESSIVE BUFFERING - NO MORE PAUSING!
+        backBufferLength: 0, // Clear old segments immediately
+        maxBufferLength: 10, // Only buffer 10 seconds ahead
+        maxMaxBufferLength: 15, // Max 15 seconds
+        maxBufferSize: 30 * 1000 * 1000, // 30MB max
+        maxBufferHole: 0.1, // Fill small gaps quickly
+        
+        // FAST LOADING
+        highBufferWatchdogPeriod: 1, // Check buffer every 1 second
+        nudgeOffset: 0.05, // Small nudges for smooth playback
+        nudgeMaxRetry: 10, // Try harder to fix issues
+        maxFragLookUpTolerance: 0.1, // Find fragments faster
+        
+        // LIVE STREAMING OPTIMIZATION
+        liveSyncDurationCount: 2, // Stay closer to live edge
+        liveMaxLatencyDurationCount: 4, // Max 4 segments behind
+        liveDurationInfinity: true, // Allow infinite live streams
+        liveBackBufferLength: 0, // Don't keep old live data
+        maxLiveSyncPlaybackRate: 2.0, // Speed up to catch up
+        
+        // INSTANT START
+        testBandwidth: false, // Don't test, just start!
         progressive: true,
-        startLevel: -1, // Auto quality
+        startLevel: 0, // Start with lowest quality for instant playback
         autoStartLoad: true,
-        capLevelToPlayerSize: true,
-        manifestLoadingTimeOut: 10000,
-        manifestLoadingMaxRetry: 3,
-        manifestLoadingRetryDelay: 1000,
-        levelLoadingTimeOut: 10000,
-        levelLoadingMaxRetry: 4,
-        levelLoadingRetryDelay: 1000,
-        fragLoadingTimeOut: 20000,
-        fragLoadingMaxRetry: 6,
-        fragLoadingRetryDelay: 1000
+        capLevelToPlayerSize: false, // Don't limit based on player size
+        
+        // AGGRESSIVE RETRIES
+        manifestLoadingTimeOut: 5000, // 5 seconds
+        manifestLoadingMaxRetry: 10, // Try 10 times
+        manifestLoadingRetryDelay: 500, // Retry faster (0.5s)
+        levelLoadingTimeOut: 5000,
+        levelLoadingMaxRetry: 10,
+        levelLoadingRetryDelay: 500,
+        fragLoadingTimeOut: 10000,
+        fragLoadingMaxRetry: 20, // Try VERY hard
+        fragLoadingRetryDelay: 300, // Retry super fast (0.3s)
+        
+        // SMOOTH PLAYBACK
+        abrEwmaDefaultEstimate: 500000, // Assume 500kbps for start
+        abrBandWidthFactor: 0.8, // Use 80% of bandwidth
+        abrBandWidthUpFactor: 0.7, // Conservative upgrade
+        abrMaxWithRealBitrate: true,
+        maxStarvationDelay: 2, // Wait max 2 seconds before starvation recovery
+        maxLoadingDelay: 2, // Max 2 seconds delay
+        minAutoBitrate: 0 // Allow any bitrate
       });
 
       hlsRef.current = hls;
@@ -62,39 +81,80 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
 
       // Event handlers
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('📋 HLS Manifest parsed successfully');
+        console.log('📋 HLS Manifest parsed - PLAYING NOW!');
         video.play().catch(err => {
-          console.warn('⚠️ Autoplay prevented:', err.message);
+          console.warn('⚠️ Autoplay prevented, trying again...', err.message);
+          // Try again after a short delay
+          setTimeout(() => video.play().catch(() => {}), 100);
         });
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error('❌ HLS Error:', data.type, data.details);
-        
         if (data.fatal) {
+          console.error('❌ FATAL HLS Error:', data.type, data.details);
+          
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              console.log('🔄 Network error, trying to recover...');
-              hls.startLoad();
+              console.log('🔄 Network error - RECOVERING IMMEDIATELY');
+              // Immediate recovery
+              setTimeout(() => {
+                hls.startLoad();
+                video.play().catch(() => {});
+              }, 100);
               break;
+              
             case Hls.ErrorTypes.MEDIA_ERROR:
-              console.log('🔄 Media error, trying to recover...');
+              console.log('🔄 Media error - RECOVERING IMMEDIATELY');
+              // Try to recover
               hls.recoverMediaError();
+              setTimeout(() => {
+                video.play().catch(() => {});
+              }, 100);
               break;
+              
             default:
-              console.error('💀 Fatal error, cannot recover');
+              console.error('💀 Fatal error - RESTARTING STREAM');
+              // Restart the entire stream
               hls.destroy();
+              setTimeout(() => {
+                const newHls = new Hls();
+                newHls.loadSource(streamUrl);
+                newHls.attachMedia(video);
+                newHls.on(Hls.Events.MANIFEST_PARSED, () => {
+                  video.play().catch(() => {});
+                });
+              }, 500);
               break;
           }
+        } else {
+          // Non-fatal error - just log it
+          console.warn('⚠️ Non-fatal HLS warning:', data.details);
         }
       });
 
-      hls.on(Hls.Events.FRAG_LOADED, () => {
-        console.log('📦 Fragment loaded');
+      // Auto-resume on buffer stall
+      hls.on(Hls.Events.BUFFER_STALLED, () => {
+        console.log('⚠️ Buffer stalled - forcing playback resume');
+        video.play().catch(() => {});
       });
 
+      // Log when buffering
+      hls.on(Hls.Events.BUFFER_APPENDING, () => {
+        console.log('📦 Buffering data...');
+      });
+
+      // Celebrate successful fragment loads
+      let fragCount = 0;
+      hls.on(Hls.Events.FRAG_LOADED, () => {
+        fragCount++;
+        if (fragCount % 10 === 0) {
+          console.log(`✅ Loaded ${fragCount} fragments - stream is smooth!`);
+        }
+      });
+
+      // Log quality changes
       hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-        console.log(`🔄 Quality switched to level ${data.level}`);
+        console.log(`🎬 Quality: Level ${data.level}`);
       });
 
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
