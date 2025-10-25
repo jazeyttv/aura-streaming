@@ -100,19 +100,6 @@ const Admin = () => {
     }
   };
 
-  const handleChangeRole = async (userId, newRole) => {
-    if (!window.confirm(`Change user role to ${newRole}?`)) return;
-
-    try {
-      await axios.put(`/api/admin/users/${userId}/role`, { role: newRole });
-      await fetchUsers();
-      alert('Role updated successfully!');
-    } catch (error) {
-      console.error('Error changing role:', error);
-      alert('Failed to update role');
-    }
-  };
-
   const handleBanUser = async (userId) => {
     const reason = prompt('Ban reason (optional):');
     if (reason === null) return;
