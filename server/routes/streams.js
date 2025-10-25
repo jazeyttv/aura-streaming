@@ -9,9 +9,11 @@ const authRoutes = require('./auth');
 // Get environment variables
 const PUBLIC_IP = process.env.PUBLIC_IP || 'localhost';
 const HTTP_MEDIA_PORT = process.env.HTTP_MEDIA_PORT || '8888';
-const MEDIA_URL = `http://${PUBLIC_IP}:${HTTP_MEDIA_PORT}`;
+// Use MEDIA_URL from environment if set (for production/Render), otherwise construct it
+const MEDIA_URL = process.env.MEDIA_URL || `http://${PUBLIC_IP}:${HTTP_MEDIA_PORT}`;
 
 console.log('[STREAMS] Media URL configured as:', MEDIA_URL);
+console.log('[STREAMS] Using environment MEDIA_URL:', !!process.env.MEDIA_URL);
 console.log('[STREAMS] PUBLIC_IP:', PUBLIC_IP);
 console.log('[STREAMS] HTTP_MEDIA_PORT:', HTTP_MEDIA_PORT);
 
