@@ -24,7 +24,13 @@ const Dashboard = () => {
   const socketRef = React.useRef(null);
 
   useEffect(() => {
-    if (!user?.isStreamer) {
+    // Check if user has streaming access
+    if (!user) {
+      return;
+    }
+
+    if (!user.isStreamer) {
+      alert('⛔ You do not have streaming access. Please contact an administrator.');
       navigate('/');
       return;
     }

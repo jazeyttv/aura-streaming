@@ -81,12 +81,10 @@ const userSchema = new mongoose.Schema({
     default: null
   },
   followers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: mongoose.Schema.Types.Mixed
   }],
   following: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: mongoose.Schema.Types.Mixed
   }],
   totalViewers: {
     type: Number,
