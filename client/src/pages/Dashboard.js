@@ -3,7 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { Video, Monitor, Eye, Settings, Key, Copy, RefreshCw, ExternalLink } from 'lucide-react';
+import { 
+  Video, Monitor, Eye, Settings as SettingsIcon, Key, Copy, RefreshCw, 
+  ExternalLink, Users, Clock, Filter, MoreVertical, Zap, MessageSquare,
+  Shield, Ban, SlashIcon, UserX, Activity
+} from 'lucide-react';
 import { SOCKET_URL } from '../config';
 import './Dashboard.css';
 
@@ -17,11 +21,15 @@ const Dashboard = () => {
     category: 'Just Chatting'
   });
   const [viewerCount, setViewerCount] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [sessionTime, setSessionTime] = useState('00:00:00');
   const [loading, setLoading] = useState(false);
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [streamStartTime, setStreamStartTime] = useState(null);
   
   const socketRef = React.useRef(null);
+  const timerRef = React.useRef(null);
 
   useEffect(() => {
     // Check if user has streaming access
@@ -36,6 +44,7 @@ const Dashboard = () => {
     }
 
     fetchActiveStream();
+    fetchFollowerCount();
 
     // Connect to Socket.IO
     socketRef.current = io(SOCKET_URL);
@@ -48,361 +57,356 @@ const Dashboard = () => {
     });
 
     socketRef.current.on('stream-ended', ({ streamId }) => {
-      console.log('[DASHBOARD] Stream ended event:', { streamId });
+      console.log('[DASHBOARD] Stream ended event:', streamId);
       if (activeStream && (activeStream.id === streamId || activeStream._id === streamId)) {
         setActiveStream(null);
+        setViewerCount(0);
+        setStreamStartTime(null);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
       }
     });
 
-    // Poll for stream status every 5 seconds
-    const pollInterval = setInterval(() => {
-      fetchActiveStream();
-    }, 5000);
+    socketRef.current.on('viewer-count', ({ streamId, count }) => {
+      if (activeStream && (activeStream.id === streamId || activeStream._id === streamId)) {
+        setViewerCount(count);
+      }
+    });
 
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-      clearInterval(pollInterval);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
-  }, [user, navigate]);
+  }, [user, navigate, activeStream]);
 
+  // Timer for session time
   useEffect(() => {
-    if (activeStream && socketRef.current) {
-      const streamId = activeStream.id || activeStream._id;
-      
-      socketRef.current.on('viewer-count', (count) => {
-        setViewerCount(count);
-      });
+    if (streamStartTime) {
+      timerRef.current = setInterval(() => {
+        const now = new Date();
+        const diff = Math.floor((now - streamStartTime) / 1000);
+        const hours = Math.floor(diff / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+        const seconds = (diff % 60).toString().padStart(2, '0');
+        setSessionTime(`${hours}:${minutes}:${seconds}`);
+      }, 1000);
+    } else {
+      setSessionTime('00:00:00');
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     }
-  }, [activeStream]);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [streamStartTime]);
 
   const fetchActiveStream = async () => {
     try {
-      const response = await axios.get('/api/streams/user/active');
-      console.log('[DASHBOARD] Fetched active stream:', response.data);
-      if (response.data.stream) {
-        const stream = response.data.stream;
-        setActiveStream(stream);
+      const response = await axios.get(`/api/streams/${user.id}`);
+      if (response.data) {
+        setActiveStream(response.data);
         setStreamSettings({
-          title: stream.title,
-          description: stream.description || '',
-          category: stream.category
+          title: response.data.title || '',
+          description: response.data.description || '',
+          category: response.data.category || 'Just Chatting'
         });
-        setViewerCount(stream.viewerCount || 0);
-      } else {
-        // No active stream
-        if (activeStream) {
-          setActiveStream(null);
+        setViewerCount(response.data.viewerCount || 0);
+        if (response.data.startedAt) {
+          setStreamStartTime(new Date(response.data.startedAt));
         }
       }
     } catch (error) {
-      console.error('Error fetching active stream:', error);
+      console.error('Error fetching stream:', error);
     }
   };
 
-  const handleUpdateStream = async () => {
+  const fetchFollowerCount = async () => {
+    try {
+      const response = await axios.get(`/api/users/${user.username}`);
+      setFollowerCount(response.data.followers?.length || 0);
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+    }
+  };
+
+  const handleUpdateStream = async (e) => {
+    e.preventDefault();
     if (!activeStream) return;
 
     setLoading(true);
     try {
-      const streamId = activeStream.id || activeStream._id;
-      await axios.put(`/api/streams/${streamId}`, streamSettings);
-      await fetchActiveStream();
-      alert('Stream settings updated!');
+      await axios.put(`/api/streams/${activeStream.id || activeStream._id}`, streamSettings);
+      alert('✅ Stream updated successfully!');
+      fetchActiveStream();
     } catch (error) {
       console.error('Error updating stream:', error);
-      alert('Failed to update stream settings');
+      alert('❌ Failed to update stream');
     }
     setLoading(false);
   };
 
   const handleRegenerateKey = async () => {
-    if (!window.confirm('Are you sure? Your current stream key will stop working!')) {
+    if (!window.confirm('⚠️ Are you sure? Your current stream key will stop working!')) {
       return;
     }
 
-    setLoading(true);
     try {
       const response = await axios.post('/api/streams/regenerate-key');
-      // Update user in context
-      const updatedUser = { ...user, streamKey: response.data.streamKey };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      alert('Stream key regenerated! Please update your streaming software.');
+      alert('✅ Stream key regenerated! Please update OBS with your new key.');
       window.location.reload();
     } catch (error) {
       console.error('Error regenerating key:', error);
-      alert('Failed to regenerate stream key');
-    }
-    setLoading(false);
-  };
-
-  const handleEndStream = async () => {
-    if (!window.confirm('Are you sure you want to end your stream? This will stop your broadcast.')) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const streamId = activeStream.id || activeStream._id;
-      await axios.post(`/api/streams/${streamId}/end`);
-      setActiveStream(null);
-      alert('Stream ended successfully!');
-    } catch (error) {
-      console.error('Error ending stream:', error);
-      alert('Failed to end stream. Please stop your broadcast in OBS.');
-    }
-    setLoading(false);
-  };
-
-  const copyToClipboard = (text, type) => {
-    // Use modern clipboard API if available (HTTPS or localhost)
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text)
-        .then(() => {
-          setCopySuccess(type);
-          setTimeout(() => setCopySuccess(false), 2000);
-        })
-        .catch((err) => {
-          console.error('Clipboard failed:', err);
-          fallbackCopy(text, type);
-        });
-    } else {
-      // Fallback for HTTP connections
-      fallbackCopy(text, type);
+      alert('❌ Failed to regenerate stream key');
     }
   };
 
-  const fallbackCopy = (text, type) => {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-      document.execCommand('copy');
-      setCopySuccess(type);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Fallback copy failed:', err);
-      alert('Copy failed. Please copy manually: ' + text);
-    }
-    
-    document.body.removeChild(textArea);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  const handleViewStream = () => {
+  const openStreamInNewTab = () => {
     if (activeStream) {
-      const streamId = activeStream.id || activeStream._id;
-      window.open(`/stream/${streamId}`, '_blank');
+      window.open(`/stream/${activeStream.id || activeStream._id}`, '_blank');
     }
   };
+
+  if (!user || !user.isStreamer) {
+    return null;
+  }
+
+  const isLive = activeStream?.isLive;
 
   return (
-    <div className="page-container">
-      <div className="container">
-        <div className="dashboard-header">
-          <div>
-            <h1>Creator Dashboard</h1>
-            <p>Welcome, {user?.displayName || user?.username}</p>
-          </div>
-          {user?.role === 'admin' && (
-            <button 
-              className="btn btn-secondary"
-              onClick={() => navigate('/admin')}
-            >
-              Admin Panel
-            </button>
-          )}
+    <div className="dashboard-container">
+      <div className="dashboard-sidebar">
+        <div className="sidebar-section">
+          <h3>Stream</h3>
+          <button className="sidebar-btn active">
+            <Video size={18} />
+            <span>Stream Manager</span>
+          </button>
+        </div>
+        
+        <div className="sidebar-section">
+          <h3>Studio</h3>
+          <button className="sidebar-btn">
+            <Activity size={18} />
+            <span>Dashboard</span>
+          </button>
+          <button className="sidebar-btn" onClick={() => navigate('/settings')}>
+            <SettingsIcon size={18} />
+            <span>Settings</span>
+          </button>
         </div>
 
-        <div className="dashboard-content">
-          {/* Stream Key Section */}
-          <div className="stream-key-section">
-            <div className="setup-card">
-              <div className="setup-header">
-                <Key size={28} />
-                <h2>Streaming Setup (OBS/StreamLabs)</h2>
-              </div>
+        <div className="sidebar-section">
+          <h3>Channel</h3>
+          <button className="sidebar-btn" onClick={() => navigate(`/profile/${user.username}`)}>
+            <Monitor size={18} />
+            <span>My Channel</span>
+          </button>
+        </div>
+      </div>
 
-              <div className="stream-credentials">
-                <div className="credential-item">
-                  <label>RTMP Server URL</label>
-                  <div className="credential-input-group">
-            <input 
-              type="text" 
-              value={'rtmp://72.23.212.188:1935/live'}
-              readOnly 
-            />
-            <button 
-              className="btn-icon"
-              onClick={() => copyToClipboard('rtmp://72.23.212.188:1935/live', 'url')}
-              title="Copy URL"
-            >
-                      <Copy size={18} />
-                      {copySuccess === 'url' && <span className="copy-tooltip">Copied!</span>}
-                    </button>
-                  </div>
-                </div>
+      <div className="dashboard-main">
+        <div className="dashboard-header">
+          <div className="header-left">
+            <h1>Stream Manager</h1>
+            <div className="stream-status">
+              <div className={`status-indicator ${isLive ? 'live' : 'offline'}`}></div>
+              <span>{isLive ? 'LIVE' : 'OFFLINE'}</span>
+            </div>
+          </div>
+        </div>
 
-                <div className="credential-item">
-                  <label>Stream Key</label>
-                  <div className="credential-input-group">
-                    <input 
-                      type={showStreamKey ? 'text' : 'password'} 
-                      value={user?.streamKey || 'No stream key'}
-                      readOnly 
-                    />
-                    <button 
-                      className="btn-icon"
-                      onClick={() => setShowStreamKey(!showStreamKey)}
-                      title={showStreamKey ? 'Hide' : 'Show'}
-                    >
-                      {showStreamKey ? '🙈' : '👁️'}
-                    </button>
-                    <button 
-                      className="btn-icon"
-                      onClick={() => copyToClipboard(user?.streamKey, 'key')}
-                      title="Copy Key"
-                    >
-                      <Copy size={18} />
-                      {copySuccess === 'key' && <span className="copy-tooltip">Copied!</span>}
-                    </button>
-                  </div>
-                </div>
+        <div className="dashboard-grid">
+          {/* Session Info Panel */}
+          <div className="session-info-panel">
+            <div className="info-card">
+              <div className="info-label">Session</div>
+              <div className="info-value">{isLive ? 'ONLINE' : 'OFFLINE'}</div>
+            </div>
+            <div className="info-divider"></div>
+            <div className="info-card">
+              <div className="info-label">Viewers</div>
+              <div className="info-value">{viewerCount}</div>
+            </div>
+            <div className="info-divider"></div>
+            <div className="info-card">
+              <div className="info-label">Followers</div>
+              <div className="info-value">{followerCount}</div>
+            </div>
+            <div className="info-divider"></div>
+            <div className="info-card">
+              <div className="info-label">Time Live</div>
+              <div className="info-value">{sessionTime}</div>
+            </div>
+          </div>
 
-                <button 
-                  className="btn btn-secondary"
-                  onClick={handleRegenerateKey}
-                  disabled={loading}
-                >
-                  <RefreshCw size={18} />
-                  Regenerate Stream Key
-                </button>
-              </div>
-
-              <div className="obs-instructions">
-                <h3>📹 How to Stream with OBS:</h3>
-                <ol>
-                  <li>Open OBS Studio</li>
-                  <li>Go to Settings → Stream</li>
-                  <li>Service: Custom</li>
-                  <li>Server: Copy the RTMP URL above</li>
-                  <li>Stream Key: Copy your stream key</li>
-                  <li>Click OK, then Start Streaming in OBS!</li>
-                </ol>
-                <a 
-                  href="https://obsproject.com/download" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="download-obs"
-                >
+          {/* Stream Preview */}
+          <div className="stream-preview-panel">
+            <div className="panel-header">
+              <Monitor size={18} />
+              <span>Stream Preview</span>
+              {isLive && (
+                <button className="btn-icon" onClick={openStreamInNewTab} title="Open in new tab">
                   <ExternalLink size={16} />
-                  Download OBS Studio
-                </a>
+                </button>
+              )}
+            </div>
+            <div className="stream-preview-container">
+              {isLive ? (
+                <div className="preview-live">
+                  <video 
+                    className="preview-video" 
+                    src={activeStream.streamUrl}
+                    autoPlay 
+                    muted
+                    playsInline
+                  />
+                  <div className="preview-overlay">
+                    <div className="preview-badge live">LIVE</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="preview-offline">
+                  <div className="offline-icon">
+                    <Video size={64} />
+                  </div>
+                  <div className="offline-badge">OFFLINE</div>
+                  <p className="offline-text">{user.username} is offline</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Activity Feed */}
+          <div className="activity-feed-panel">
+            <div className="panel-header">
+              <Activity size={18} />
+              <span>Activity Feed</span>
+              <button className="btn-icon">
+                <Filter size={16} />
+              </button>
+            </div>
+            <div className="activity-feed-content">
+              <div className="activity-placeholder">
+                <Activity size={32} />
+                <p>Activity feed coming soon</p>
               </div>
             </div>
           </div>
 
-          {/* Stream Settings */}
-          {activeStream ? (
-            <div className="stream-active-section">
-              <div className="setup-card">
-                <div className="setup-header">
-                  <Video size={28} />
-                  <h2>Live Stream Settings</h2>
-                  <div className="live-indicator-badge">
-                    <span className="live-dot"></span>
-                    LIVE
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Stream Title</label>
-                  <input
-                    type="text"
-                    value={streamSettings.title}
-                    onChange={(e) => setStreamSettings({...streamSettings, title: e.target.value})}
-                    maxLength={100}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Description</label>
-                  <textarea
-                    value={streamSettings.description}
-                    onChange={(e) => setStreamSettings({...streamSettings, description: e.target.value})}
-                    maxLength={500}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Category</label>
-                  <select
-                    value={streamSettings.category}
-                    onChange={(e) => setStreamSettings({...streamSettings, category: e.target.value})}
-                  >
-                    <option>Just Chatting</option>
-                    <option>Gaming</option>
-                    <option>Music</option>
-                    <option>Creative</option>
-                    <option>IRL</option>
-                    <option>Sports</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                <div className="stream-stats-inline">
-                  <div className="stat-inline">
-                    <Eye size={20} />
-                    <span>{viewerCount} viewers</span>
-                  </div>
-                </div>
-
-                <div className="stream-actions-inline">
-                  <button 
-                    className="btn btn-primary"
-                    onClick={handleUpdateStream}
-                    disabled={loading}
-                  >
-                    <Settings size={18} />
-                    Update Settings
-                  </button>
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={handleViewStream}
-                  >
-                    <Monitor size={18} />
-                    View Stream
-                  </button>
-                  <button 
-                    className="btn btn-danger"
-                    onClick={handleEndStream}
-                    disabled={loading}
-                  >
-                    <Video size={18} />
-                    End Stream
-                  </button>
-                </div>
+          {/* Mod Actions */}
+          <div className="mod-actions-panel">
+            <div className="panel-header">
+              <Shield size={18} />
+              <span>Mod Actions</span>
+              <button className="btn-icon">
+                <Filter size={16} />
+              </button>
+            </div>
+            <div className="mod-actions-content">
+              <div className="mod-placeholder">
+                <Shield size={32} />
+                <p>No recent mod actions</p>
               </div>
             </div>
-          ) : (
-            <div className="stream-offline">
-              <div className="setup-card">
-                <div className="setup-header">
-                  <Settings size={28} />
-                  <h2>Not Streaming</h2>
-                </div>
-                <p className="offline-message">
-                  Start streaming with OBS using your stream key above. 
-                  Your stream will appear automatically when you go live!
-                </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Channel Actions Sidebar */}
+      <div className="dashboard-right-sidebar">
+        <div className="actions-panel">
+          <div className="panel-header">
+            <Zap size={18} />
+            <span>Channel Actions</span>
+          </div>
+          
+          <div className="action-group">
+            <h4>Stream Settings</h4>
+            <form onSubmit={handleUpdateStream}>
+              <div className="form-group-compact">
+                <label>Stream Title</label>
+                <input
+                  type="text"
+                  value={streamSettings.title}
+                  onChange={(e) => setStreamSettings({ ...streamSettings, title: e.target.value })}
+                  placeholder="What are you streaming?"
+                  maxLength={100}
+                />
+              </div>
+
+              <div className="form-group-compact">
+                <label>Category</label>
+                <select
+                  value={streamSettings.category}
+                  onChange={(e) => setStreamSettings({ ...streamSettings, category: e.target.value })}
+                >
+                  <option>Just Chatting</option>
+                  <option>Gaming</option>
+                  <option>Music</option>
+                  <option>Creative</option>
+                  <option>Sports</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              {isLive && (
+                <button type="submit" className="btn-action" disabled={loading}>
+                  <SettingsIcon size={16} />
+                  {loading ? 'Updating...' : 'Update Stream'}
+                </button>
+              )}
+            </form>
+          </div>
+
+          <div className="action-group">
+            <h4>Streaming Setup</h4>
+            <div className="setup-item">
+              <label>RTMP URL</label>
+              <div className="input-with-copy">
+                <input type="text" value={user.rtmpUrl} readOnly />
+                <button onClick={() => copyToClipboard(user.rtmpUrl)} className="btn-copy">
+                  <Copy size={14} />
+                </button>
               </div>
             </div>
-          )}
+
+            <div className="setup-item">
+              <label>Stream Key</label>
+              <div className="input-with-copy">
+                <input 
+                  type={showStreamKey ? 'text' : 'password'} 
+                  value={user.streamKey} 
+                  readOnly 
+                />
+                <button onClick={() => setShowStreamKey(!showStreamKey)} className="btn-copy">
+                  <Eye size={14} />
+                </button>
+                <button onClick={() => copyToClipboard(user.streamKey)} className="btn-copy">
+                  <Copy size={14} />
+                </button>
+              </div>
+              {copySuccess && <small className="success-text">✓ Copied!</small>}
+            </div>
+
+            <button onClick={handleRegenerateKey} className="btn-action-secondary">
+              <RefreshCw size={16} />
+              Regenerate Key
+            </button>
+          </div>
         </div>
       </div>
     </div>
