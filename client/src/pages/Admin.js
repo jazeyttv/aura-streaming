@@ -31,6 +31,8 @@ const Admin = () => {
   const [selectedUserForBadges, setSelectedUserForBadges] = useState(null);
   const [availableBadges] = useState(getAllBadges());
   const [tempBadgeSelection, setTempBadgeSelection] = useState([]);
+  const [maintenanceMode, setMaintenanceMode] = useState({ enabled: false, message: '' });
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   
   // Dynamically determine RTMP URL from API_URL
   const getRtmpUrl = () => {
@@ -51,6 +53,7 @@ const Admin = () => {
 
     fetchStats();
     fetchUsers();
+    fetchMaintenanceStatus();
   }, [user, navigate]);
 
   useEffect(() => {
@@ -103,6 +106,36 @@ const Admin = () => {
       console.error('Error fetching users:', error);
       setLoading(false);
     }
+  };
+
+  const fetchMaintenanceStatus = async () => {
+    try {
+      const response = await axios.get('/api/maintenance/status');
+      setMaintenanceMode({
+        enabled: response.data.enabled,
+        message: response.data.message || '🔧 Website is currently under maintenance. Please check back soon!'
+      });
+    } catch (error) {
+      console.error('Error fetching maintenance status:', error);
+    }
+  };
+
+  const toggleMaintenance = async () => {
+    setMaintenanceLoading(true);
+    try {
+      const response = await axios.post('/api/maintenance/toggle', {
+        enabled: !maintenanceMode.enabled,
+        message: maintenanceMode.message
+      });
+      setMaintenanceMode({
+        enabled: response.data.enabled,
+        message: response.data.message
+      });
+      alert(`✅ Maintenance mode ${response.data.enabled ? 'ENABLED' : 'DISABLED'}`);
+    } catch (error) {
+      alert('❌ Failed to toggle maintenance mode');
+    }
+    setMaintenanceLoading(false);
   };
 
   const handleBanUser = async (userId) => {
@@ -444,6 +477,43 @@ const Admin = () => {
               <p>Current Viewers</p>
             </div>
           </div>
+        </div>
+
+        {/* Maintenance Mode */}
+        <div className="admin-section maintenance-section">
+          <div className="section-header">
+            <h2>🔧 Website Maintenance</h2>
+            <label className="maintenance-toggle">
+              <input
+                type="checkbox"
+                checked={maintenanceMode.enabled}
+                onChange={toggleMaintenance}
+                disabled={maintenanceLoading}
+              />
+              <span className="toggle-slider"></span>
+              <span className="toggle-label">
+                {maintenanceMode.enabled ? 'ENABLED - Only admins can access' : 'DISABLED - Site is public'}
+              </span>
+            </label>
+          </div>
+          
+          <div className="maintenance-message">
+            <label>Maintenance Message:</label>
+            <input
+              type="text"
+              value={maintenanceMode.message}
+              onChange={(e) => setMaintenanceMode({ ...maintenanceMode, message: e.target.value })}
+              placeholder="Message to show users"
+              disabled={maintenanceLoading}
+            />
+            <small>This message will be displayed to users when maintenance mode is enabled.</small>
+          </div>
+
+          {maintenanceMode.enabled && (
+            <div className="maintenance-warning">
+              ⚠️ <strong>MAINTENANCE MODE ACTIVE!</strong> Only admins can access the website.
+            </div>
+          )}
         </div>
 
         {/* Users Management */}
