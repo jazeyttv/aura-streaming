@@ -53,7 +53,7 @@
 }
 
 .sidebar-btn.active {
-  background: #53fc18;
+  background: #00d9ff;
   color: #000;
   font-weight: 600;
 }
@@ -105,7 +105,7 @@
 }
 
 .status-indicator.live {
-  background: #53fc18;
+  background: #00d9ff;
   animation: pulse 2s infinite;
 }
 
@@ -147,7 +147,7 @@
 .info-value {
   font-size: 24px;
   font-weight: 700;
-  color: #53fc18;
+  color: #00d9ff;
 }
 
 .info-divider {
@@ -221,7 +221,7 @@
 
 .preview-badge {
   padding: 4px 12px;
-  background: #53fc18;
+  background: #00d9ff;
   color: #000;
   font-weight: 700;
   font-size: 11px;
@@ -337,7 +337,7 @@
 .action-group h4 {
   font-size: 14px;
   font-weight: 600;
-  color: #53fc18;
+  color: #00d9ff;
   margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -371,7 +371,7 @@
 .form-group-compact input:focus,
 .form-group-compact select:focus,
 .form-group-compact textarea:focus {
-  border-color: #53fc18;
+  border-color: #00d9ff;
   outline: none;
 }
 
@@ -417,14 +417,14 @@
 
 .btn-copy:hover {
   background: #333;
-  color: #53fc18;
-  border-color: #53fc18;
+  color: #00d9ff;
+  border-color: #00d9ff;
 }
 
 .btn-action {
   width: 100%;
   padding: 12px 20px;
-  background: #53fc18;
+  background: #00d9ff;
   border: none;
   border-radius: 6px;
   color: #000;
@@ -439,7 +439,7 @@
 }
 
 .btn-action:hover:not(:disabled) {
-  background: #45d414;
+  background: #00b8d4;
   transform: translateY(-1px);
 }
 
@@ -467,13 +467,13 @@
 
 .btn-action-secondary:hover {
   background: #1a1a1a;
-  border-color: #53fc18;
-  color: #53fc18;
+  border-color: #00d9ff;
+  color: #00d9ff;
 }
 
 .success-text {
   display: block;
-  color: #53fc18;
+  color: #00d9ff;
   font-size: 11px;
   margin-top: 4px;
 }

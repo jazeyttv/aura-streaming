@@ -215,6 +215,12 @@ const Dashboard = () => {
             <Monitor size={18} />
             <span>My Channel</span>
           </button>
+          {user.role === 'admin' && (
+            <button className="sidebar-btn" onClick={() => navigate('/admin')}>
+              <Shield size={18} />
+              <span>Admin Panel</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -267,12 +273,12 @@ const Dashboard = () => {
             <div className="stream-preview-container">
               {isLive ? (
                 <div className="preview-live">
-                  <video 
-                    className="preview-video" 
-                    src={activeStream.streamUrl}
-                    autoPlay 
-                    muted
-                    playsInline
+                  <iframe
+                    className="preview-video"
+                    src={`/stream/${activeStream.id || activeStream._id}?embed=true`}
+                    frameBorder="0"
+                    allowFullScreen
+                    title="Stream Preview"
                   />
                   <div className="preview-overlay">
                     <div className="preview-badge live">LIVE</div>
