@@ -119,6 +119,7 @@ const Dashboard = () => {
     try {
       const response = await axios.get(`/api/streams/${user.id}`);
       console.log('[DASHBOARD] Stream data:', response.data);
+      
       if (response.data && response.data.isLive) {
         setActiveStream(response.data);
         setStreamSettings({
@@ -131,15 +132,33 @@ const Dashboard = () => {
           setStreamStartTime(new Date(response.data.startedAt));
         }
       } else {
-        // Stream is not live
+        // Stream exists but not live
         setActiveStream(null);
         setViewerCount(0);
         setStreamStartTime(null);
       }
     } catch (error) {
-      console.error('Error fetching stream:', error);
-      setActiveStream(null);
-      setViewerCount(0);
+      // 404 means no stream exists yet - this is normal when offline
+      if (error.response && error.response.status === 404) {
+        console.log('[DASHBOARD] No active stream found (offline)');
+        setActiveStream(null);
+        setViewerCount(0);
+        setStreamStartTime(null);
+        
+        // Load saved settings from localStorage
+        const savedSettings = localStorage.getItem('streamSettings');
+        if (savedSettings) {
+          try {
+            setStreamSettings(JSON.parse(savedSettings));
+          } catch (e) {
+            console.error('Failed to parse saved settings:', e);
+          }
+        }
+      } else {
+        console.error('Error fetching stream:', error);
+        setActiveStream(null);
+        setViewerCount(0);
+      }
     }
   };
 
@@ -163,13 +182,15 @@ const Dashboard = () => {
         // Update existing live stream
         await axios.put(`/api/streams/${activeStream.id || activeStream._id}`, streamSettings);
         setMessage('✅ Stream updated successfully!');
+        setTimeout(() => setMessage(''), 3000);
+        fetchActiveStream();
       } else {
-        // Create/prepare stream settings for when you go live
-        console.log('[DASHBOARD] Stream settings saved for next stream');
+        // Save settings to localStorage for when you go live
+        localStorage.setItem('streamSettings', JSON.stringify(streamSettings));
+        console.log('[DASHBOARD] Stream settings saved for next stream:', streamSettings);
         setMessage('✅ Settings saved! They will apply when you go live.');
+        setTimeout(() => setMessage(''), 3000);
       }
-      setTimeout(() => setMessage(''), 3000);
-      fetchActiveStream();
     } catch (error) {
       console.error('Error updating stream:', error);
       setMessage('❌ Failed to update stream');
