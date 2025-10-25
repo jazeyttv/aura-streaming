@@ -60,14 +60,29 @@ axios.interceptors.request.use(
   }
 );
 
-// Handle 401 errors globally
+// Handle 401 errors and IP bans globally
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle IP ban (403 with ipBanned flag)
+    if (error.response?.status === 403 && error.response?.data?.ipBanned) {
+      console.error('🚫 IP BANNED - Access denied to entire platform');
+      // Clear all auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Show ban message
+      alert('🚫 YOUR IP HAS BEEN PERMANENTLY BANNED FROM THIS PLATFORM\n\nYou violated the Terms of Service and your access has been revoked.');
+      // Redirect to login (which will also be blocked by IP ban)
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+    
+    // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       console.error('❌ 401 Unauthorized - Token invalid or expired');
       // Clear invalid token
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       // Redirect to login if not already there
       if (!window.location.pathname.includes('/login')) {
         console.log('🔄 Redirecting to login...');

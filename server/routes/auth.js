@@ -165,6 +165,8 @@ router.post('/register', async (req, res) => {
         following: [],
         totalViewers: 0,
         streamCount: 0,
+        customBadges: [], // No badges by default
+        selectedBadge: null,
         createdAt: new Date()
       };
 
@@ -188,7 +190,12 @@ router.post('/register', async (req, res) => {
           isStreamer: newUser.isStreamer,
           role: newUser.role,
           streamKey: newUser.streamKey,
-          rtmpUrl: newUser.rtmpUrl
+          rtmpUrl: newUser.rtmpUrl,
+          chatColor: newUser.chatColor,
+          isPartner: newUser.isPartner,
+          isAffiliate: newUser.isAffiliate,
+          customBadges: newUser.customBadges || [],
+          selectedBadge: newUser.selectedBadge
         }
       });
     } else {
@@ -242,7 +249,9 @@ router.post('/register', async (req, res) => {
           rtmpUrl: user.rtmpUrl,
           chatColor: user.chatColor || '#FFFFFF',
           isPartner: user.isPartner || false,
-          isAffiliate: user.isAffiliate || false
+          isAffiliate: user.isAffiliate || false,
+          customBadges: user.customBadges || [],
+          selectedBadge: user.selectedBadge
         }
       });
     }
@@ -331,7 +340,12 @@ router.post('/login', async (req, res) => {
           isStreamer: adminUser.isStreamer,
           role: 'admin',
           streamKey: adminUser.streamKey,
-          rtmpUrl: adminUser.rtmpUrl
+          rtmpUrl: adminUser.rtmpUrl,
+          chatColor: adminUser.chatColor || '#FFFFFF',
+          isPartner: adminUser.isPartner || false,
+          isAffiliate: adminUser.isAffiliate || false,
+          customBadges: adminUser.customBadges || [],
+          selectedBadge: adminUser.selectedBadge
         }
       });
     }
@@ -393,7 +407,9 @@ router.post('/login', async (req, res) => {
           rtmpUrl: user.rtmpUrl,
           chatColor: user.chatColor || '#FFFFFF',
           isPartner: user.isPartner || false,
-          isAffiliate: user.isAffiliate || false
+          isAffiliate: user.isAffiliate || false,
+          customBadges: user.customBadges || [],
+          selectedBadge: user.selectedBadge
         }
       });
     } else {
@@ -457,7 +473,9 @@ router.post('/login', async (req, res) => {
           rtmpUrl: user.rtmpUrl,
           chatColor: user.chatColor || '#FFFFFF',
           isPartner: user.isPartner || false,
-          isAffiliate: user.isAffiliate || false
+          isAffiliate: user.isAffiliate || false,
+          customBadges: user.customBadges || [],
+          selectedBadge: user.selectedBadge
         }
       });
     }

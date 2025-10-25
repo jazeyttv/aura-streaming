@@ -5,6 +5,7 @@ const Stream = require('../models/Stream');
 const authMiddleware = require('../middleware/auth');
 const authRoutes = require('./auth');
 const bcrypt = require('bcryptjs');
+const { getAllBadges, isValidBadgeId, getBadgeById } = require('../config/badges');
 
 // Get user profile
 router.get('/:username', async (req, res) => {
@@ -488,6 +489,125 @@ router.get('/following/live', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Get following live streams error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// ========================================
+// CUSTOM BADGE SYSTEM - USER ENDPOINTS
+// ========================================
+
+// Get all available badges (public)
+router.get('/api/badges/all', async (req, res) => {
+  try {
+    const badges = getAllBadges();
+    res.json({ badges });
+  } catch (error) {
+    console.error('Get all badges error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get user's assigned badges
+router.get('/api/badges/my-badges', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Get full badge objects
+      const userBadges = (user.customBadges || []).map(badgeId => getBadgeById(badgeId)).filter(Boolean);
+
+      res.json({ 
+        customBadges: user.customBadges || [],
+        badges: userBadges,
+        selectedBadge: user.selectedBadge
+      });
+    } else {
+      const user = await User.findOne({ _id: userId });
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Get full badge objects
+      const userBadges = (user.customBadges || []).map(badgeId => getBadgeById(badgeId)).filter(Boolean);
+
+      res.json({
+        customBadges: user.customBadges || [],
+        badges: userBadges,
+        selectedBadge: user.selectedBadge
+      });
+    }
+  } catch (error) {
+    console.error('Get my badges error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Select a badge to display
+router.post('/api/badges/select', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { badgeId } = req.body;
+
+    // Allow null to deselect badge
+    if (badgeId !== null && !isValidBadgeId(badgeId)) {
+      return res.status(400).json({ message: 'Invalid badge ID' });
+    }
+
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if user has this badge assigned
+      if (badgeId !== null && !(user.customBadges || []).includes(badgeId)) {
+        return res.status(403).json({ message: 'You do not have access to this badge' });
+      }
+
+      user.selectedBadge = badgeId;
+
+      console.log(`✨ BADGE SELECTED: ${user.username} selected ${badgeId || 'none'}`);
+
+      res.json({ 
+        message: 'Badge selected successfully',
+        selectedBadge: user.selectedBadge
+      });
+    } else {
+      const user = await User.findOne({ _id: userId });
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if user has this badge assigned
+      if (badgeId !== null && !(user.customBadges || []).includes(badgeId)) {
+        return res.status(403).json({ message: 'You do not have access to this badge' });
+      }
+
+      user.selectedBadge = badgeId;
+      await user.save();
+
+      console.log(`✨ BADGE SELECTED: ${user.username} selected ${badgeId || 'none'}`);
+
+      res.json({
+        message: 'Badge selected successfully',
+        selectedBadge: user.selectedBadge
+      });
+    }
+  } catch (error) {
+    console.error('Select badge error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

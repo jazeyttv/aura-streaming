@@ -6,6 +6,7 @@ const BanRecord = require('../models/BanRecord');
 const authMiddleware = require('../middleware/auth');
 const authRoutes = require('./auth');
 const { banIP, unbanIP } = require('../middleware/ipBanCheck');
+const { getAllBadges, isValidBadgeId } = require('../config/badges');
 
 // Middleware to check admin role
 const adminMiddleware = (req, res, next) => {
@@ -897,6 +898,159 @@ router.post('/users/:userId/ip-unban', authMiddleware, adminMiddleware, async (r
     }
   } catch (error) {
     console.error('IP unban user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ========================================
+// CUSTOM BADGE SYSTEM
+// ========================================
+
+// Get all available badges
+router.get('/badges', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const badges = getAllBadges();
+    res.json({ badges });
+  } catch (error) {
+    console.error('Get badges error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Assign badges to a user (admin only)
+router.post('/users/:userId/badges', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { badgeIds } = req.body; // Array of badge IDs to assign
+
+    if (!Array.isArray(badgeIds)) {
+      return res.status(400).json({ message: 'badgeIds must be an array' });
+    }
+
+    // Validate all badge IDs
+    const invalidBadges = badgeIds.filter(id => !isValidBadgeId(id));
+    if (invalidBadges.length > 0) {
+      return res.status(400).json({ 
+        message: 'Invalid badge IDs',
+        invalidBadges 
+      });
+    }
+
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.customBadges = badgeIds;
+      
+      // If user had a selected badge that's no longer assigned, clear it
+      if (user.selectedBadge && !badgeIds.includes(user.selectedBadge)) {
+        user.selectedBadge = null;
+      }
+
+      console.log(`✨ BADGES ASSIGNED: ${user.username} now has ${badgeIds.length} badge(s): ${badgeIds.join(', ')}`);
+
+      res.json({ 
+        message: 'Badges assigned successfully',
+        userId: user.id,
+        username: user.username,
+        customBadges: user.customBadges,
+        selectedBadge: user.selectedBadge
+      });
+    } else {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.customBadges = badgeIds;
+      
+      // If user had a selected badge that's no longer assigned, clear it
+      if (user.selectedBadge && !badgeIds.includes(user.selectedBadge)) {
+        user.selectedBadge = null;
+      }
+
+      await user.save();
+
+      console.log(`✨ BADGES ASSIGNED: ${user.username} now has ${badgeIds.length} badge(s): ${badgeIds.join(', ')}`);
+
+      res.json({
+        message: 'Badges assigned successfully',
+        userId: user._id,
+        username: user.username,
+        customBadges: user.customBadges,
+        selectedBadge: user.selectedBadge
+      });
+    }
+  } catch (error) {
+    console.error('Assign badges error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Remove a specific badge from a user
+router.delete('/users/:userId/badges/:badgeId', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { userId, badgeId } = req.params;
+
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.customBadges = (user.customBadges || []).filter(id => id !== badgeId);
+      
+      // If user had this badge selected, clear it
+      if (user.selectedBadge === badgeId) {
+        user.selectedBadge = null;
+      }
+
+      console.log(`🗑️ BADGE REMOVED: ${badgeId} from ${user.username}`);
+
+      res.json({ 
+        message: 'Badge removed successfully',
+        userId: user.id,
+        username: user.username,
+        customBadges: user.customBadges,
+        selectedBadge: user.selectedBadge
+      });
+    } else {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.customBadges = (user.customBadges || []).filter(id => id !== badgeId);
+      
+      // If user had this badge selected, clear it
+      if (user.selectedBadge === badgeId) {
+        user.selectedBadge = null;
+      }
+
+      await user.save();
+
+      console.log(`🗑️ BADGE REMOVED: ${badgeId} from ${user.username}`);
+
+      res.json({
+        message: 'Badge removed successfully',
+        userId: user._id,
+        username: user.username,
+        customBadges: user.customBadges,
+        selectedBadge: user.selectedBadge
+      });
+    }
+  } catch (error) {
+    console.error('Remove badge error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

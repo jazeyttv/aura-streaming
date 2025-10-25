@@ -69,7 +69,53 @@ const io = socketIo(server, {
   }
 });
 
-// IP Ban Check Middleware - BEFORE everything else
+// EMERGENCY UNBAN ENDPOINT - BEFORE IP CHECK!
+app.post('/api/emergency-unban-jazey', express.json(), async (req, res) => {
+  try {
+    const { password } = req.body;
+    
+    // Secret emergency password to prevent abuse
+    if (password !== '1919') {
+      return res.status(403).json({ message: 'Invalid emergency password' });
+    }
+
+    const User = require('./models/User');
+    const { unbanIP } = require('./middleware/ipBanCheck');
+    
+    // Find Jazey
+    const jazey = await User.findOne({ username: 'Jazey' });
+    
+    if (!jazey) {
+      return res.status(404).json({ message: 'Jazey not found' });
+    }
+
+    // Get IPs before unbanning
+    const bannedIPs = [jazey.ipAddress, jazey.lastIpAddress].filter(Boolean);
+    
+    // Remove IP ban from database
+    jazey.isIpBanned = false;
+    await jazey.save();
+    
+    // Remove IPs from in-memory ban list
+    bannedIPs.forEach(ip => {
+      if (ip) unbanIP(ip);
+    });
+
+    console.log('🚨 EMERGENCY UNBAN: Jazey unbanned successfully!');
+    console.log(`   Unbanned IPs: ${bannedIPs.join(', ')}`);
+
+    res.json({ 
+      success: true,
+      message: '✅ Jazey has been unbanned!',
+      unbannedIPs: bannedIPs
+    });
+  } catch (error) {
+    console.error('Emergency unban error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// IP Ban Check Middleware - AFTER emergency endpoint
 app.use(checkIPBan);
 
 // Middleware - Dynamic CORS

@@ -106,6 +106,14 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Custom Badge System
+  customBadges: [{
+    type: String // Array of badge IDs that admin has assigned to this user
+  }],
+  selectedBadge: {
+    type: String, // The badge ID the user has chosen to display
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
