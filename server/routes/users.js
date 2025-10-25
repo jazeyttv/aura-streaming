@@ -94,7 +94,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
         }
       });
     } else {
-      const user = await User.findById(userId);
+      const user = await User.findOne({ _id: userId });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -143,7 +143,7 @@ router.put('/password', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -170,7 +170,7 @@ router.put('/chat-color', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Invalid color format. Use hex format like #FF0000' });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -207,8 +207,8 @@ router.post('/:userId/follow', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'You cannot follow yourself' });
     }
 
-    const userToFollow = await User.findById(userId);
-    const follower = await User.findById(followerId);
+    const userToFollow = await User.findOne({ _id: userId });
+    const follower = await User.findOne({ _id: followerId });
 
     if (!userToFollow || !follower) {
       console.log('❌ User not found:', { userToFollow: !!userToFollow, follower: !!follower });
@@ -252,8 +252,8 @@ router.delete('/:userId/follow', authMiddleware, async (req, res) => {
 
     console.log('🔄 Unfollow request:', { userId, followerId });
 
-    const userToUnfollow = await User.findById(userId);
-    const follower = await User.findById(followerId);
+    const userToUnfollow = await User.findOne({ _id: userId });
+    const follower = await User.findOne({ _id: followerId });
 
     if (!userToUnfollow || !follower) {
       console.log('❌ User not found for unfollow');
@@ -288,7 +288,7 @@ router.get('/:userId/following', authMiddleware, async (req, res) => {
 
     console.log('🔍 Check following:', { userId, followerId });
 
-    const follower = await User.findById(followerId);
+    const follower = await User.findOne({ _id: followerId });
     if (!follower) {
       console.log('❌ Follower not found');
       return res.status(404).json({ message: 'User not found' });
@@ -312,7 +312,7 @@ router.get('/following/live', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const user = await User.findById(userId).populate('following', '_id username displayName avatar');
+    const user = await User.findOne({ _id: userId }).populate('following', '_id username displayName avatar');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
