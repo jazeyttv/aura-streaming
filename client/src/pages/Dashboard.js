@@ -93,6 +93,14 @@ const Dashboard = () => {
     };
   }, [user, navigate]);
 
+  // Monitor viewer count when stream is active
+  useEffect(() => {
+    if (activeStream && socketRef.current) {
+      // Socket already listening from main useEffect
+      console.log('[DASHBOARD] Monitoring viewer count for stream');
+    }
+  }, [activeStream]);
+
   // Timer for session time
   useEffect(() => {
     if (streamStartTime) {
