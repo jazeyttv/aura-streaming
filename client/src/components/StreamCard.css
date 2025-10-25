@@ -120,13 +120,52 @@
   text-overflow: ellipsis;
 }
 
+.stream-card-streamer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
 .stream-card-streamer {
   font-size: 13px;
   color: #adadb8;
-  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin: 0;
+}
+
+.stream-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.stream-card-badge.partner {
+  filter: drop-shadow(0 0 4px rgba(0, 217, 255, 0.5));
+}
+
+.stream-card-badge.affiliate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: #00d9ff;
+  color: #000;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.stream-card-badge.admin {
+  filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.5));
+}
+
+.stream-card-badge.mod {
+  filter: drop-shadow(0 0 4px rgba(68, 68, 255, 0.5));
 }
 
 .stream-card-category {

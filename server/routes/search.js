@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
         { displayName: searchRegex }
       ]
     })
-      .select('username displayName avatar isStreamer isPartner isAffiliate followers')
+      .select('username displayName avatar isStreamer isPartner isAffiliate followers role')
       .limit(10)
       .lean();
 
@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
         { category: searchRegex }
       ]
     })
-      .populate('streamer', 'username displayName avatar isPartner isAffiliate')
+      .populate('streamer', 'username displayName avatar isPartner isAffiliate role')
       .limit(10)
       .lean();
 

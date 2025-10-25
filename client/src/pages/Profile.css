@@ -50,6 +50,55 @@
   color: #aaa;
 }
 
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.profile-badge.badge-partner {
+  background: linear-gradient(135deg, #7b2cbf, #5a189a);
+  color: #00ffff;
+  border: 1px solid #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.profile-badge.badge-affiliate {
+  background: #00d9ff;
+  color: #000;
+  font-weight: 900;
+  font-size: 16px;
+  padding: 6px 12px;
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+}
+
+.profile-badge.badge-admin {
+  background: #ff4444;
+  color: #fff;
+}
+
+.profile-badge.badge-moderator {
+  background: #4444ff;
+  color: #fff;
+}
+
+.profile-badge.badge-streamer {
+  background: linear-gradient(135deg, #00d9ff 0%, #00b8d9 100%);
+  color: #000;
+}
+
 .streamer-badge {
   background: linear-gradient(135deg, #00d9ff 0%, #00b8d9 100%);
   color: #000;

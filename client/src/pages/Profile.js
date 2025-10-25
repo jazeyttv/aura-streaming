@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { User, Calendar, Edit, Heart } from 'lucide-react';
+import { User, Calendar, Edit, Heart, Shield, Crown, CheckCircle } from 'lucide-react';
 import './Profile.css';
 
 const Profile = () => {
@@ -100,6 +100,45 @@ const Profile = () => {
     }
   };
 
+  const getRoleBadges = () => {
+    const badges = [];
+    
+    if (profile?.isPartner) {
+      badges.push(
+        <span key="partner" className="profile-badge badge-partner" title="Verified Partner">
+          <CheckCircle size={16} fill="currentColor" />
+          Partner
+        </span>
+      );
+    }
+    
+    if (profile?.isAffiliate) {
+      badges.push(
+        <span key="affiliate" className="profile-badge badge-affiliate" title="Affiliate">
+          A
+        </span>
+      );
+    }
+    
+    if (profile?.role === 'admin') {
+      badges.push(
+        <span key="admin" className="profile-badge badge-admin" title="Administrator">
+          <Crown size={16} />
+          Admin
+        </span>
+      );
+    } else if (profile?.role === 'moderator') {
+      badges.push(
+        <span key="mod" className="profile-badge badge-moderator" title="Moderator">
+          <Shield size={16} />
+          Mod
+        </span>
+      );
+    }
+    
+    return badges;
+  };
+
   if (loading) {
     return (
       <div className="page-container">
@@ -139,9 +178,12 @@ const Profile = () => {
                 <span className="profile-username">@{profile.username}</span>
               </div>
               
-              {profile.isStreamer && (
-                <div className="streamer-badge">Creator</div>
-              )}
+              <div className="profile-badges">
+                {getRoleBadges()}
+                {profile.isStreamer && (
+                  <span className="profile-badge badge-streamer">Creator</span>
+                )}
+              </div>
               
               <div className="profile-meta">
                 <Calendar size={16} />

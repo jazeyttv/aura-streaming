@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Search, X, Video, CheckCircle, Users } from 'lucide-react';
+import { Search, X, Video, CheckCircle, Users, Shield, Crown } from 'lucide-react';
 import './SearchBar.css';
 
 const SearchBar = () => {
@@ -119,14 +119,36 @@ const SearchBar = () => {
                       <div className="search-user-info">
                         <div className="search-user-name">
                           {user.displayName || user.username}
-                          {user.isPartner && (
-                            <CheckCircle 
-                              className="partner-badge-search" 
-                              size={16} 
-                              fill="#00d9ff"
-                              color="#00d9ff"
-                            />
-                          )}
+                          <div className="search-badges">
+                            {user.isPartner && (
+                              <CheckCircle 
+                                className="partner-badge-search" 
+                                size={16} 
+                                fill="#00d9ff"
+                                color="#00d9ff"
+                                title="Verified Partner"
+                              />
+                            )}
+                            {user.isAffiliate && (
+                              <span className="affiliate-badge-search" title="Affiliate">A</span>
+                            )}
+                            {user.role === 'admin' && (
+                              <Crown 
+                                className="admin-badge-search" 
+                                size={16}
+                                color="#ff4444"
+                                title="Administrator"
+                              />
+                            )}
+                            {user.role === 'moderator' && (
+                              <Shield 
+                                className="mod-badge-search" 
+                                size={16}
+                                color="#4444ff"
+                                title="Moderator"
+                              />
+                            )}
+                          </div>
                         </div>
                         <div className="search-user-meta">
                           {user.username} • {user.followerCount || 0} followers
