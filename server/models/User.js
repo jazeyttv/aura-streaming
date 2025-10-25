@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  banner: {
+    type: String,
+    default: ''
+  },
   chatColor: {
     type: String,
     default: '#FFFFFF'
