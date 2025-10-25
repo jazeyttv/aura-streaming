@@ -1059,5 +1059,94 @@ router.delete('/users/:userId/badges/:badgeId', authMiddleware, adminMiddleware,
   }
 });
 
+// Clear all stream keys (admin only)
+router.post('/clear-all-stream-keys', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+    
+    if (useMemory) {
+      // Clear stream keys from in-memory storage
+      let count = 0;
+      authRoutes.users.forEach((user) => {
+        if (user.streamKey) {
+          user.streamKey = null;
+          count++;
+        }
+      });
+      
+      console.log(`🔑 Admin: Cleared ${count} stream keys from memory`);
+      return res.json({
+        success: true,
+        message: `Cleared ${count} stream keys`,
+        count
+      });
+    } else {
+      // Clear stream keys from database
+      const result = await User.updateMany(
+        { streamKey: { $exists: true, $ne: null } },
+        { $set: { streamKey: null } }
+      );
+      
+      console.log(`🔑 Admin: Cleared ${result.modifiedCount} stream keys from database`);
+      
+      res.json({
+        success: true,
+        message: `Cleared ${result.modifiedCount} stream keys`,
+        count: result.modifiedCount
+      });
+    }
+  } catch (error) {
+    console.error('Clear stream keys error:', error);
+    res.status(500).json({ message: 'Failed to clear stream keys' });
+  }
+});
+
+// Regenerate all stream keys (admin only)
+router.post('/regenerate-all-stream-keys', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const crypto = require('crypto');
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+    
+    if (useMemory) {
+      // Regenerate stream keys in memory
+      let count = 0;
+      authRoutes.users.forEach((user) => {
+        if (user.isStreamer) {
+          user.streamKey = 'sk_' + crypto.randomBytes(20).toString('hex');
+          count++;
+        }
+      });
+      
+      console.log(`🔑 Admin: Regenerated ${count} stream keys in memory`);
+      return res.json({
+        success: true,
+        message: `Regenerated ${count} stream keys`,
+        count
+      });
+    } else {
+      // Regenerate stream keys for all streamers in database
+      const streamers = await User.find({ isStreamer: true });
+      let count = 0;
+      
+      for (const streamer of streamers) {
+        streamer.streamKey = 'sk_' + crypto.randomBytes(20).toString('hex');
+        await streamer.save();
+        count++;
+      }
+      
+      console.log(`🔑 Admin: Regenerated ${count} stream keys in database`);
+      
+      res.json({
+        success: true,
+        message: `Regenerated ${count} stream keys for streamers`,
+        count
+      });
+    }
+  } catch (error) {
+    console.error('Regenerate stream keys error:', error);
+    res.status(500).json({ message: 'Failed to regenerate stream keys' });
+  }
+});
+
 module.exports = router;
 
