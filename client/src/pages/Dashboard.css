@@ -9,11 +9,11 @@
 
 /* Left Sidebar */
 .dashboard-sidebar {
-  width: 200px;
-  min-width: 200px;
+  width: 180px;
+  min-width: 180px;
   background: #000;
   border-right: 1px solid #1a1a1a;
-  padding: 20px 0;
+  padding: 16px 0;
   flex-shrink: 0;
 }
 
@@ -62,7 +62,7 @@
 .dashboard-main {
   flex: 1;
   min-width: 0;
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -309,12 +309,12 @@
 
 /* Right Sidebar - Channel Actions */
 .dashboard-right-sidebar {
-  width: 320px;
-  min-width: 320px;
-  max-width: 320px;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
   background: #000;
   border-left: 1px solid #1a1a1a;
-  padding: 20px 12px;
+  padding: 16px 12px;
   overflow-y: auto;
   flex-shrink: 0;
 }
@@ -480,6 +480,11 @@
 
 /* Responsive */
 @media (max-width: 1600px) {
+  .dashboard-sidebar {
+    width: 160px;
+    min-width: 160px;
+  }
+  
   .dashboard-right-sidebar {
     width: 280px;
     min-width: 280px;
@@ -489,14 +494,19 @@
 
 @media (max-width: 1400px) {
   .dashboard-sidebar {
-    width: 180px;
-    min-width: 180px;
+    width: 140px;
+    min-width: 140px;
   }
   
   .dashboard-right-sidebar {
     width: 260px;
     min-width: 260px;
     max-width: 260px;
+  }
+  
+  .sidebar-btn {
+    font-size: 13px;
+    padding: 8px 10px;
   }
 }
 
