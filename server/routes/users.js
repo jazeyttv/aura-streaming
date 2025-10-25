@@ -287,6 +287,14 @@ router.post('/:userId/follow', authMiddleware, async (req, res) => {
       if (notification) {
         const io = req.app.get('io');
         emitNotification(io, notification);
+        
+        // Emit follow event for dashboard activity feed
+        io.emit('new-follower', {
+          userId: userId,
+          followerId: followerId,
+          followerUsername: follower.username
+        });
+        console.log('[FOLLOW] Emitted new-follower event:', follower.username);
       }
 
       res.json({ message: 'User followed successfully', isFollowing: true });
@@ -329,6 +337,14 @@ router.post('/:userId/follow', authMiddleware, async (req, res) => {
       if (notification) {
         const io = req.app.get('io');
         emitNotification(io, notification);
+        
+        // Emit follow event for dashboard activity feed
+        io.emit('new-follower', {
+          userId: userId.toString(),
+          followerId: followerId.toString(),
+          followerUsername: follower.username
+        });
+        console.log('[FOLLOW] Emitted new-follower event:', follower.username);
       }
 
       console.log('Follow successful');

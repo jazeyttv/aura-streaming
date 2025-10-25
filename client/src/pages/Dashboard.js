@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [streamStartTime, setStreamStartTime] = useState(null);
   const [message, setMessage] = useState('');
+  const [recentActivity, setRecentActivity] = useState([]);
   
   const socketRef = React.useRef(null);
   const timerRef = React.useRef(null);
@@ -46,6 +47,7 @@ const Dashboard = () => {
 
     fetchActiveStream();
     fetchFollowerCount();
+    fetchRecentActivity();
 
     // Poll for updates every 5 seconds
     const pollInterval = setInterval(() => {
@@ -78,6 +80,20 @@ const Dashboard = () => {
     socketRef.current.on('viewer-count', (count) => {
       console.log('[DASHBOARD] Viewer count update:', count);
       setViewerCount(count);
+    });
+
+    // Listen for new followers
+    socketRef.current.on('new-follower', (data) => {
+      console.log('[DASHBOARD] New follower:', data);
+      const newActivity = {
+        id: Date.now(),
+        type: 'follow',
+        username: data.followerUsername,
+        timestamp: new Date(),
+        message: `${data.followerUsername} followed you!`
+      };
+      setRecentActivity(prev => [newActivity, ...prev].slice(0, 10)); // Keep last 10
+      setFollowerCount(prev => prev + 1);
     });
 
     return () => {
@@ -173,6 +189,39 @@ const Dashboard = () => {
     }
   };
 
+  const fetchRecentActivity = async () => {
+    try {
+      // Get recent followers (last 10)
+      const response = await axios.get(`/api/users/${user.username}`);
+      if (response.data.followers && response.data.followers.length > 0) {
+        // Get follower details
+        const recentFollowerIds = response.data.followers.slice(-10).reverse();
+        const activities = [];
+        
+        for (const followerId of recentFollowerIds) {
+          try {
+            const followerResponse = await axios.get(`/api/users/${followerId}`);
+            if (followerResponse.data) {
+              activities.push({
+                id: `${followerId}-${Date.now()}`,
+                type: 'follow',
+                username: followerResponse.data.username,
+                timestamp: new Date(),
+                message: `${followerResponse.data.username} followed you!`
+              });
+            }
+          } catch (err) {
+            console.error('Error fetching follower details:', err);
+          }
+        }
+        
+        setRecentActivity(activities);
+      }
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  };
+
   const handleUpdateStream = async (e) => {
     if (e) e.preventDefault();
     
@@ -226,6 +275,15 @@ const Dashboard = () => {
     if (activeStream) {
       window.open(`/stream/${activeStream.id || activeStream._id}`, '_blank');
     }
+  };
+
+  const formatTimeAgo = (timestamp) => {
+    const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
   };
 
   if (!user || !user.isStreamer) {
@@ -355,15 +413,31 @@ const Dashboard = () => {
             <div className="panel-header">
               <Activity size={18} />
               <span>Activity Feed</span>
-              <button className="btn-icon">
-                <Filter size={16} />
-              </button>
             </div>
             <div className="activity-feed-content">
-              <div className="activity-placeholder">
-                <Activity size={32} />
-                <p>Activity feed coming soon</p>
-              </div>
+              {recentActivity.length > 0 ? (
+                <div className="activity-list">
+                  {recentActivity.map((activity) => (
+                    <div key={activity.id} className="activity-item">
+                      <div className="activity-icon follow-icon">
+                        <Users size={14} />
+                      </div>
+                      <div className="activity-details">
+                        <span className="activity-username">{activity.username}</span>
+                        <span className="activity-message">followed you!</span>
+                      </div>
+                      <div className="activity-time">
+                        {formatTimeAgo(activity.timestamp)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="activity-placeholder">
+                  <Activity size={32} />
+                  <p>No recent activity</p>
+                </div>
+              )}
             </div>
           </div>
 

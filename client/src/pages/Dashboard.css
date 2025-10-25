@@ -293,7 +293,68 @@
 }
 
 .activity-feed-content {
-  padding: 20px;
+  padding: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #0f0f0f;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.activity-item:hover {
+  background: #1a1a1a;
+}
+
+.activity-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.follow-icon {
+  background: rgba(0, 217, 255, 0.1);
+  color: #00d9ff;
+}
+
+.activity-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.activity-message {
+  font-size: 12px;
+  color: #999;
+}
+
+.activity-time {
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
 }
 
 .activity-placeholder {
