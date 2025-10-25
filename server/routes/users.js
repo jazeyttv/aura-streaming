@@ -312,41 +312,56 @@ router.get('/following/live', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const user = await User.findOne({ _id: userId }).populate('following', '_id username displayName avatar');
+    // FIX: Don't use .populate() with UUID-based IDs - fetch manually!
+    const user = await User.findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const followedUserIds = user.following.map(u => u._id);
+    // user.following is an array of UUID strings
+    const followedUserIds = user.following || [];
+
+    if (followedUserIds.length === 0) {
+      return res.json([]);
+    }
 
     const liveStreams = await Stream.find({
       streamer: { $in: followedUserIds },
       isLive: true
-    })
-      .populate('streamer', 'username displayName avatar role isPartner isAffiliate')
-      .sort({ viewerCount: -1 });
+    }).sort({ viewerCount: -1 });
 
-    const streams = liveStreams.map(stream => ({
-      id: stream._id,
-      _id: stream._id,
-      title: stream.title,
-      description: stream.description,
-      category: stream.category,
-      streamer: {
-        _id: stream.streamer._id,
-        username: stream.streamer.username,
-        displayName: stream.streamer.displayName,
-        avatar: stream.streamer.avatar,
-        role: stream.streamer.role,
-        isPartner: stream.streamer.isPartner,
-        isAffiliate: stream.streamer.isAffiliate
-      },
-      streamKey: stream.streamKey,
-      streamUrl: stream.streamUrl,
-      isLive: stream.isLive,
-      viewerCount: stream.viewerCount,
-      startedAt: stream.startedAt
-    }));
+    // Manually fetch streamer data for each stream
+    const streamsWithStreamers = await Promise.all(
+      liveStreams.map(async (stream) => {
+        const streamer = await User.findOne({ _id: stream.streamer });
+        if (!streamer) return null;
+
+        return {
+          id: stream._id,
+          _id: stream._id,
+          title: stream.title,
+          description: stream.description,
+          category: stream.category,
+          streamer: {
+            _id: streamer._id,
+            username: streamer.username,
+            displayName: streamer.displayName,
+            avatar: streamer.avatar,
+            role: streamer.role,
+            isPartner: streamer.isPartner,
+            isAffiliate: streamer.isAffiliate
+          },
+          streamKey: stream.streamKey,
+          streamUrl: stream.streamUrl,
+          isLive: stream.isLive,
+          viewerCount: stream.viewerCount,
+          startedAt: stream.startedAt
+        };
+      })
+    );
+
+    // Filter out any null values (in case streamer was deleted)
+    const streams = streamsWithStreamers.filter(s => s !== null);
 
     res.json(streams);
   } catch (error) {
