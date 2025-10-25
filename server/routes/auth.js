@@ -226,7 +226,10 @@ router.post('/register', async (req, res) => {
           isStreamer: user.isStreamer,
           role: user.role,
           streamKey: user.streamKey,
-          rtmpUrl: user.rtmpUrl
+          rtmpUrl: user.rtmpUrl,
+          chatColor: user.chatColor || '#FFFFFF',
+          isPartner: user.isPartner || false,
+          isAffiliate: user.isAffiliate || false
         }
       });
     }
@@ -361,7 +364,10 @@ router.post('/login', async (req, res) => {
           isStreamer: user.isStreamer,
           role: user.role,
           streamKey: user.streamKey,
-          rtmpUrl: user.rtmpUrl
+          rtmpUrl: user.rtmpUrl,
+          chatColor: user.chatColor || '#FFFFFF',
+          isPartner: user.isPartner || false,
+          isAffiliate: user.isAffiliate || false
         }
       });
     } else {
@@ -406,7 +412,10 @@ router.post('/login', async (req, res) => {
           isStreamer: user.isStreamer,
           role: user.role,
           streamKey: user.streamKey,
-          rtmpUrl: user.rtmpUrl
+          rtmpUrl: user.rtmpUrl,
+          chatColor: user.chatColor || '#FFFFFF',
+          isPartner: user.isPartner || false,
+          isAffiliate: user.isAffiliate || false
         }
       });
     }

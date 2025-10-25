@@ -234,7 +234,8 @@ const StreamView = () => {
       message: messageInput,
       userId: user.id,
       userRole: user.role || 'user',
-      isPartner: user.isPartner || false
+      isPartner: user.isPartner || false,
+      chatColor: user.chatColor || '#FFFFFF'
     });
 
     setMessageInput('');
@@ -462,7 +463,7 @@ const StreamView = () => {
                       key={msg.id} 
                       className={`chat-message ${msg.userRole === 'system' ? 'system-message' : ''}`}
                     >
-                      <span className="chat-username" style={{ color: getRoleColor(msg.userRole) }}>
+                      <span className="chat-username" style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}>
                         {msg.username}
                         {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner)}
                       </span>
