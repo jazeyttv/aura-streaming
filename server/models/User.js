@@ -72,6 +72,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  isChatBanned: {
+    type: Boolean,
+    default: false
+  },
+  chatBannedUntil: {
+    type: Date,
+    default: null
+  },
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

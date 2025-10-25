@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw } from 'lucide-react';
+import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw, Trash2, MessageCircle, X, Search, Info } from 'lucide-react';
 import { API_URL } from '../config';
 import './Admin.css';
 
@@ -17,9 +17,15 @@ const Admin = () => {
     totalViewers: 0
   });
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterType, setFilterType] = useState('all');
   const [loading, setLoading] = useState(true);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [selectedKey, setSelectedKey] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
   
   // Dynamically determine RTMP URL from API_URL
   const getRtmpUrl = () => {
@@ -42,6 +48,38 @@ const Admin = () => {
     fetchUsers();
   }, [user, navigate]);
 
+  useEffect(() => {
+    // Filter users based on search and filters
+    let filtered = users;
+
+    if (searchTerm) {
+      filtered = filtered.filter(u => 
+        u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterRole !== 'all') {
+      filtered = filtered.filter(u => u.role === filterRole);
+    }
+
+    if (filterType !== 'all') {
+      if (filterType === 'streamer') {
+        filtered = filtered.filter(u => u.isStreamer);
+      } else if (filterType === 'viewer') {
+        filtered = filtered.filter(u => !u.isStreamer);
+      } else if (filterType === 'partner') {
+        filtered = filtered.filter(u => u.isPartner);
+      } else if (filterType === 'affiliate') {
+        filtered = filtered.filter(u => u.isAffiliate);
+      } else if (filterType === 'banned') {
+        filtered = filtered.filter(u => u.isBanned);
+      }
+    }
+
+    setFilteredUsers(filtered);
+  }, [users, searchTerm, filterRole, filterType]);
+
   const fetchStats = async () => {
     try {
       const response = await axios.get('/api/admin/stats');
@@ -54,13 +92,6 @@ const Admin = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get('/api/admin/users');
-      console.log('📋 Admin received users:', response.data.length);
-      console.log('🔑 First user sample:', {
-        username: response.data[0]?.username,
-        isStreamer: response.data[0]?.isStreamer,
-        hasStreamKey: !!response.data[0]?.streamKey,
-        streamKey: response.data[0]?.streamKey ? response.data[0].streamKey.substring(0, 15) + '...' : null
-      });
       setUsers(response.data);
       setLoading(false);
     } catch (error) {
@@ -112,40 +143,106 @@ const Admin = () => {
     }
   };
 
+  const handleChatBan = async (userId) => {
+    const reason = prompt('Chat ban reason (optional):');
+    if (reason === null) return;
+
+    try {
+      await axios.post(`/api/admin/users/${userId}/chat-ban`, {
+        reason,
+        duration: 0 // permanent
+      });
+      await fetchUsers();
+      alert('User chat banned successfully!');
+    } catch (error) {
+      console.error('Error chat banning user:', error);
+      alert(error.response?.data?.message || 'Failed to chat ban user');
+    }
+  };
+
+  const handleChatUnban = async (userId) => {
+    if (!window.confirm('Remove chat ban from this user?')) return;
+
+    try {
+      await axios.post(`/api/admin/users/${userId}/chat-unban`);
+      await fetchUsers();
+      alert('User chat unbanned successfully!');
+    } catch (error) {
+      console.error('Error chat unbanning user:', error);
+      alert('Failed to chat unban user');
+    }
+  };
+
   const handleTogglePartner = async (userId, currentStatus) => {
-    const action = currentStatus ? 'remove' : 'add';
-    if (!window.confirm(`${action === 'add' ? 'Add' : 'Remove'} partner status?`)) return;
+    const action = currentStatus ? 'remove partner status from' : 'make partner';
+    if (!window.confirm(`Are you sure you want to ${action} this user?`)) return;
 
     try {
       await axios.put(`/api/admin/users/${userId}/partner`, {
         isPartner: !currentStatus
       });
       await fetchUsers();
-      alert(`Partner status ${action === 'add' ? 'added' : 'removed'} successfully!`);
+      alert(`User ${currentStatus ? 'removed from' : 'added to'} partner program!`);
     } catch (error) {
-      console.error('Error toggling partner status:', error);
+      console.error('Error toggling partner:', error);
       alert('Failed to update partner status');
     }
   };
 
   const handleToggleAffiliate = async (userId, currentStatus) => {
-    const action = currentStatus ? 'remove' : 'add';
-    if (!window.confirm(`${action === 'add' ? 'Add' : 'Remove'} affiliate status?`)) return;
+    const action = currentStatus ? 'remove affiliate status from' : 'make affiliate';
+    if (!window.confirm(`Are you sure you want to ${action} this user?`)) return;
 
     try {
       await axios.put(`/api/admin/users/${userId}/affiliate`, {
         isAffiliate: !currentStatus
       });
       await fetchUsers();
-      alert(`Affiliate status ${action === 'add' ? 'added' : 'removed'} successfully!`);
+      alert(`User ${currentStatus ? 'removed from' : 'added to'} affiliate program!`);
     } catch (error) {
-      console.error('Error toggling affiliate status:', error);
+      console.error('Error toggling affiliate:', error);
       alert('Failed to update affiliate status');
     }
   };
 
+  const handleToggleStreaming = async (userId, username, currentStatus) => {
+    const action = currentStatus ? 'disable streaming for' : 'enable streaming for';
+    if (!window.confirm(`Are you sure you want to ${action} ${username}?`)) return;
+
+    try {
+      await axios.put(`/api/admin/users/${userId}/streaming-access`, {
+        canStream: !currentStatus
+      });
+      await fetchUsers();
+      alert(`Streaming ${currentStatus ? 'disabled' : 'enabled'} for ${username}!`);
+    } catch (error) {
+      console.error('Error toggling streaming:', error);
+      alert('Failed to update streaming access');
+    }
+  };
+
+  const handleDeleteUser = async (userId, username) => {
+    if (!window.confirm(`⚠️ DELETE USER "${username}"?\n\nThis will permanently delete:\n- User account\n- All streams\n- All data\n\nThis CANNOT be undone!`)) return;
+    
+    const confirmation = prompt('Type the username to confirm deletion:');
+    if (confirmation !== username) {
+      alert('Username did not match. Deletion cancelled.');
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/admin/users/${userId}`);
+      await fetchUsers();
+      await fetchStats();
+      alert('User deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(error.response?.data?.message || 'Failed to delete user');
+    }
+  };
+
   const handleResetStreamKey = async (userId, username) => {
-    if (!window.confirm(`Reset stream key for ${username}? This will invalidate their current key.`)) return;
+    if (!window.confirm(`Reset stream key for ${username}? This will end any active stream.`)) return;
 
     try {
       const response = await axios.post(`/api/admin/users/${userId}/reset-key`);
@@ -162,6 +259,11 @@ const Admin = () => {
   const handleViewStreamKey = (streamKey, username) => {
     setSelectedKey({ streamKey, username });
     setShowKeyModal(true);
+  };
+
+  const handleViewUserDetails = (u) => {
+    setSelectedUser(u);
+    setShowUserModal(true);
   };
 
   const handleCopyToClipboard = (text) => {
@@ -263,7 +365,37 @@ const Admin = () => {
 
         {/* Users Management */}
         <div className="admin-section">
-          <h2>User Management</h2>
+          <div className="section-header">
+            <h2>User Management</h2>
+            <div className="filters">
+              <div className="search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="filter-select">
+                <option value="all">All Roles</option>
+                <option value="admin">Admins</option>
+                <option value="moderator">Moderators</option>
+                <option value="user">Users</option>
+              </select>
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
+                <option value="all">All Types</option>
+                <option value="streamer">Streamers</option>
+                <option value="viewer">Viewers</option>
+                <option value="partner">Partners</option>
+                <option value="affiliate">Affiliates</option>
+                <option value="banned">Banned</option>
+              </select>
+              <div className="filter-results">
+                {filteredUsers.length} / {users.length} users
+              </div>
+            </div>
+          </div>
           
           <div className="users-table-container">
             <table className="users-table">
@@ -273,22 +405,30 @@ const Admin = () => {
                   <th>Email</th>
                   <th>Role</th>
                   <th>Type</th>
-                  <th>Stream Key</th>
                   <th>Status</th>
                   <th>Joined</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <tr key={u.id || u._id} className={u.isBanned ? 'banned-user' : ''}>
                     <td>
-                      <strong>{u.username}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <strong>{u.username}</strong>
+                        <button
+                          className="btn-icon-small"
+                          onClick={() => handleViewUserDetails(u)}
+                          title="View Details"
+                        >
+                          <Info size={14} />
+                        </button>
+                      </div>
                     </td>
                     <td>{u.email}</td>
                     <td>{getRoleBadge(u.role)}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {u.isStreamer ? (
                           <span className="badge-streamer">Streamer</span>
                         ) : (
@@ -307,46 +447,10 @@ const Admin = () => {
                       </div>
                     </td>
                     <td>
-                      {u.isStreamer && u.streamKey ? (
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          <button
-                            className="btn-action key"
-                            onClick={() => handleViewStreamKey(u.streamKey, u.username)}
-                            title="View Stream Key"
-                          >
-                            <Eye size={14} />
-                          </button>
-                          <button
-                            className="btn-action reset-key"
-                            onClick={() => handleResetStreamKey(u.id || u._id, u.username)}
-                            title="Reset Stream Key"
-                          >
-                            <RefreshCw size={14} />
-                          </button>
-                        </div>
-                      ) : u.isStreamer ? (
-                        <button
-                          className="btn-action reset-key"
-                          onClick={() => handleResetStreamKey(u.id || u._id, u.username)}
-                          title="Generate Stream Key"
-                          style={{ fontSize: '11px', padding: '4px 8px' }}
-                        >
-                          Generate
-                        </button>
-                      ) : (
-                        <button
-                          className="btn-action make-streamer"
-                          onClick={() => handleMakeStreamer(u.id || u._id, u.username)}
-                          title="Make Streamer"
-                          style={{ fontSize: '11px', padding: '4px 8px' }}
-                        >
-                          <Video size={12} /> Make
-                        </button>
-                      )}
-                    </td>
-                    <td>
                       {u.isBanned ? (
                         <span className="status-banned">Banned</span>
+                      ) : u.isChatBanned ? (
+                        <span className="status-chat-banned">Chat Banned</span>
                       ) : (
                         <span className="status-active">Active</span>
                       )}
@@ -354,28 +458,27 @@ const Admin = () => {
                     <td>{new Date(u.createdAt).toLocaleDateString()}</td>
                     <td>
                       <div className="action-buttons">
+                        {/* Streaming Access */}
                         {u.role !== 'admin' && (
-                          <select
-                            value={u.role}
-                            onChange={(e) => handleChangeRole(u.id || u._id, e.target.value)}
-                            className="role-select"
+                          <button
+                            className={`btn-action streaming ${u.isStreamer ? 'active' : 'disabled'}`}
+                            onClick={() => handleToggleStreaming(u.id || u._id, u.username, u.isStreamer)}
+                            title={u.isStreamer ? "Disable Streaming" : "Enable Streaming"}
                           >
-                            <option value="user">User</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                            <Video size={14} />
+                          </button>
                         )}
-                        
-                        {/* Partner button - available for all users */}
+
+                        {/* Partner */}
                         <button
                           className={`btn-action partner ${u.isPartner ? 'active' : ''}`}
                           onClick={() => handleTogglePartner(u.id || u._id, u.isPartner)}
                           title={u.isPartner ? "Remove Partner" : "Make Partner"}
                         >
-                          <CheckCircle size={16} />
+                          <CheckCircle size={14} />
                         </button>
                         
-                        {/* Affiliate button - available for all users */}
+                        {/* Affiliate */}
                         <button
                           className={`btn-action affiliate ${u.isAffiliate ? 'active' : ''}`}
                           onClick={() => handleToggleAffiliate(u.id || u._id, u.isAffiliate)}
@@ -383,14 +486,36 @@ const Admin = () => {
                         >
                           A
                         </button>
+
+                        {/* Chat Ban */}
+                        {!u.isChatBanned && u.role !== 'admin' && (
+                          <button
+                            className="btn-action chat-ban"
+                            onClick={() => handleChatBan(u.id || u._id)}
+                            title="Chat Ban"
+                          >
+                            <MessageCircle size={14} />
+                          </button>
+                        )}
+
+                        {u.isChatBanned && (
+                          <button
+                            className="btn-action chat-unban"
+                            onClick={() => handleChatUnban(u.id || u._id)}
+                            title="Remove Chat Ban"
+                          >
+                            <MessageCircle size={14} />
+                          </button>
+                        )}
                         
+                        {/* Ban/Unban */}
                         {!u.isBanned && u.role !== 'admin' && (
                           <button
                             className="btn-action ban"
                             onClick={() => handleBanUser(u.id || u._id)}
                             title="Ban User"
                           >
-                            <Ban size={16} />
+                            <Ban size={14} />
                           </button>
                         )}
                         
@@ -400,7 +525,18 @@ const Admin = () => {
                             onClick={() => handleUnbanUser(u.id || u._id)}
                             title="Unban User"
                           >
-                            <UserCheck size={16} />
+                            <UserCheck size={14} />
+                          </button>
+                        )}
+
+                        {/* Delete User */}
+                        {u.role !== 'admin' && (
+                          <button
+                            className="btn-action delete"
+                            onClick={() => handleDeleteUser(u.id || u._id, u.username)}
+                            title="Delete User"
+                          >
+                            <Trash2 size={14} />
                           </button>
                         )}
                       </div>
@@ -411,78 +547,126 @@ const Admin = () => {
             </table>
           </div>
         </div>
+      </div>
 
-        {/* Stream Key Modal */}
-        {showKeyModal && selectedKey && (
-          <div className="modal-overlay" onClick={() => setShowKeyModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3><Key size={20} /> Stream Key for {selectedKey.username}</h3>
-                <button className="modal-close" onClick={() => setShowKeyModal(false)}>×</button>
-              </div>
-              
-              <div className="modal-body">
+      {/* Stream Key Modal */}
+      {showKeyModal && selectedKey && (
+        <div className="modal-overlay" onClick={() => setShowKeyModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Stream Key for {selectedKey.username}</h2>
+              <button className="btn-close" onClick={() => setShowKeyModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="stream-key-display">
                 <div className="key-section">
-                  <label>RTMP Server:</label>
-                  <div className="key-display">
+                  <label>RTMP Server URL:</label>
+                  <div className="key-value">
                     <code>{rtmpUrl}</code>
                     <button
                       className="btn-copy"
                       onClick={() => handleCopyToClipboard(rtmpUrl)}
-                      title="Copy RTMP URL"
                     >
-                      <Copy size={16} />
+                      <Copy size={16} /> Copy
                     </button>
                   </div>
                 </div>
-
                 <div className="key-section">
                   <label>Stream Key:</label>
-                  <div className="key-display">
+                  <div className="key-value">
                     <code>{selectedKey.streamKey}</code>
                     <button
                       className="btn-copy"
                       onClick={() => handleCopyToClipboard(selectedKey.streamKey)}
-                      title="Copy Stream Key"
                     >
-                      <Copy size={16} />
+                      <Copy size={16} /> Copy
                     </button>
                   </div>
                 </div>
-
-                <div className="key-info">
-                  <p><strong>⚠️ Security Warning:</strong></p>
-                  <ul>
-                    <li>Never share this stream key publicly</li>
-                    <li>Anyone with this key can stream to this account</li>
-                    <li>Reset the key if it's been compromised</li>
-                  </ul>
-                </div>
-
-                <div className="key-info">
-                  <p><strong>📡 OBS Setup Instructions:</strong></p>
-                  <ol>
-                    <li>Open OBS Studio → Settings → Stream</li>
-                    <li>Service: <strong>Custom</strong></li>
-                    <li>Server: <code>{rtmpUrl}</code></li>
-                    <li>Stream Key: <code>{selectedKey.streamKey}</code></li>
-                    <li>Click <strong>OK</strong> and start streaming!</li>
-                  </ol>
-                </div>
               </div>
-
-              <div className="modal-footer">
-                <button className="btn-secondary" onClick={() => setShowKeyModal(false)}>
-                  Close
-                </button>
+              <div className="modal-warning">
+                ⚠️ Keep this key private! Anyone with this key can stream to this account.
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* User Details Modal */}
+      {showUserModal && selectedUser && (
+        <div className="modal-overlay" onClick={() => setShowUserModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>User Details: {selectedUser.username}</h2>
+              <button className="btn-close" onClick={() => setShowUserModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="user-details">
+                <div className="detail-row">
+                  <strong>User ID:</strong>
+                  <span>{selectedUser.id || selectedUser._id}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Username:</strong>
+                  <span>{selectedUser.username}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Email:</strong>
+                  <span>{selectedUser.email}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Role:</strong>
+                  <span>{getRoleBadge(selectedUser.role)}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Can Stream:</strong>
+                  <span>{selectedUser.isStreamer ? '✅ Yes' : '❌ No'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Partner:</strong>
+                  <span>{selectedUser.isPartner ? '✅ Yes' : '❌ No'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Affiliate:</strong>
+                  <span>{selectedUser.isAffiliate ? '✅ Yes' : '❌ No'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Banned:</strong>
+                  <span>{selectedUser.isBanned ? '🚫 Yes' : '✅ No'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Chat Banned:</strong>
+                  <span>{selectedUser.isChatBanned ? '🚫 Yes' : '✅ No'}</span>
+                </div>
+                {selectedUser.streamKey && (
+                  <div className="detail-row">
+                    <strong>Stream Key:</strong>
+                    <button
+                      className="btn-action key"
+                      onClick={() => {
+                        setShowUserModal(false);
+                        handleViewStreamKey(selectedUser.streamKey, selectedUser.username);
+                      }}
+                    >
+                      <Eye size={14} /> View Key
+                    </button>
+                  </div>
+                )}
+                <div className="detail-row">
+                  <strong>Joined:</strong>
+                  <span>{new Date(selectedUser.createdAt).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Admin;
-
