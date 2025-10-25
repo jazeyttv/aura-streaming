@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SearchBar from './SearchBar';
-import PointsDisplay from './PointsDisplay';
 import { Menu, X, User, LogOut, Video, Settings, ChevronDown } from 'lucide-react';
 import './Navbar.css';
 
@@ -50,9 +49,7 @@ const Navbar = () => {
         {/* Right Side - Auth Buttons or User Menu */}
         <div className="navbar-right">
           {isAuthenticated ? (
-            <>
-              <PointsDisplay />
-              <div className="user-menu-wrapper" ref={userMenuRef}>
+            <div className="user-menu-wrapper" ref={userMenuRef}>
               <button 
                 className="user-menu-button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -107,7 +104,6 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            </>
           ) : (
             <div className="auth-buttons">
               <Link to="/login" className="btn-login">
