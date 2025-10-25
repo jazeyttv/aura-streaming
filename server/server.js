@@ -434,6 +434,9 @@ app.use('/api/hls-proxy', hlsProxyRoutes); // HLS proxy for HTTPS streaming
 app.use('/api/notifications', notificationRoutes); // Notifications system
 app.use('/api/channel-settings', require('./routes/channelSettings')); // Channel settings
 app.use('/api/maintenance', require('./routes/maintenance')); // Maintenance mode
+app.use('/api/schedule', require('./routes/schedule')); // Stream schedule
+app.use('/api/panels', require('./routes/panels')); // Channel panels
+app.use('/api/followers', require('./routes/followers')); // Followers/Following lists
 
 // Health check
 app.get('/api/health', (req, res) => {

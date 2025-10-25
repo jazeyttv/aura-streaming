@@ -204,6 +204,70 @@ const userSchema = new mongoose.Schema({
       default: ''
     }
   },
+  // Stream Schedule
+  streamSchedule: [{
+    day: {
+      type: String,
+      enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    },
+    startTime: String, // Format: "HH:MM"
+    endTime: String,   // Format: "HH:MM"
+    enabled: {
+      type: Boolean,
+      default: true
+    }
+  }],
+  // Channel Panels
+  channelPanels: [{
+    title: {
+      type: String,
+      maxlength: 100
+    },
+    content: {
+      type: String,
+      maxlength: 1000
+    },
+    imageUrl: String,
+    link: String,
+    order: Number
+  }],
+  // Chat Settings
+  chatSettings: {
+    followerOnly: {
+      type: Boolean,
+      default: false
+    },
+    followerOnlyDuration: {
+      type: Number,
+      default: 0 // Minutes follower must have been following
+    },
+    subscriberOnly: {
+      type: Boolean,
+      default: false
+    },
+    emotesOnly: {
+      type: Boolean,
+      default: false
+    }
+  },
+  // Channel Points
+  channelPoints: {
+    type: Number,
+    default: 0
+  },
+  // Subscriber Status
+  isSubscriber: {
+    type: Boolean,
+    default: false
+  },
+  subscribedTo: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  subscribers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdAt: {
     type: Date,
     default: Date.now
