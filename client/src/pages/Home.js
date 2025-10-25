@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import StreamCard from '../components/StreamCard';
+import MaintenancePage from '../components/MaintenancePage';
 import { TrendingUp, Grid, Heart, Video } from 'lucide-react';
 import './Home.css';
 
@@ -11,8 +12,10 @@ const Home = () => {
   const [followedStreams, setFollowedStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarSection, setSidebarSection] = useState('recommended');
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   useEffect(() => {
+    checkMaintenanceMode();
     fetchLiveStreams();
     if (user) {
       fetchFollowedStreams();
@@ -26,12 +29,31 @@ const Home = () => {
     return () => clearInterval(interval);
   }, [user]);
 
+  const checkMaintenanceMode = async () => {
+    try {
+      // Make a test request to check if maintenance mode is active
+      await axios.get('/api/streams/live');
+    } catch (error) {
+      if (error.response?.status === 503 && error.response?.data?.maintenance) {
+        // Only show maintenance page if user is not admin
+        if (!user || user.role !== 'admin') {
+          setMaintenanceMode(true);
+        }
+      }
+    }
+  };
+
   const fetchLiveStreams = async () => {
     try {
       const response = await axios.get('/api/streams/live');
       setStreams(response.data);
       setLoading(false);
     } catch (error) {
+      if (error.response?.status === 503 && error.response?.data?.maintenance) {
+        if (!user || user.role !== 'admin') {
+          setMaintenanceMode(true);
+        }
+      }
       console.error('Error fetching streams:', error);
       setLoading(false);
     }
@@ -48,6 +70,11 @@ const Home = () => {
   };
 
   const displayStreams = sidebarSection === 'following' ? followedStreams : streams;
+
+  // Show maintenance page if maintenance mode is active and user is not admin
+  if (maintenanceMode && (!user || user.role !== 'admin')) {
+    return <MaintenancePage />;
+  }
 
   if (loading) {
     return (

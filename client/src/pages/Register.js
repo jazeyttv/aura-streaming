@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MaintenancePage from '../components/MaintenancePage';
 import { UserPlus } from 'lucide-react';
+import axios from 'axios';
 import './Auth.css';
 
 const Register = () => {
@@ -12,9 +14,26 @@ const Register = () => {
   const [isStreamer, setIsStreamer] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   
-  const { register } = useAuth();
+  const { register, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    checkMaintenanceMode();
+  }, []);
+
+  const checkMaintenanceMode = async () => {
+    try {
+      await axios.get('/api/health');
+    } catch (error) {
+      if (error.response?.status === 503 && error.response?.data?.maintenance) {
+        if (!user || user.role !== 'admin') {
+          setMaintenanceMode(true);
+        }
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +60,11 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  // Show maintenance page if maintenance mode is active
+  if (maintenanceMode && (!user || user.role !== 'admin')) {
+    return <MaintenancePage />;
+  }
 
   return (
     <div className="page-container">
