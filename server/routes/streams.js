@@ -24,38 +24,63 @@ const streams = new Map();
 router.post('/verify-key', async (req, res) => {
   try {
     const { streamKey } = req.body;
+    console.log('[VERIFY-KEY] 🔍 Checking stream key:', streamKey ? streamKey.substring(0, 15) + '...' : 'MISSING');
     
     if (!streamKey) {
+      console.log('[VERIFY-KEY] ❌ No stream key provided');
       return res.json({ valid: false });
     }
 
     const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
 
     if (useMemory) {
+      console.log('[VERIFY-KEY] 💾 Using in-memory storage');
       const user = Array.from(authRoutes.users.values()).find(u => u.streamKey === streamKey);
       
-      if (user && user.isStreamer && !user.isBanned) {
-        return res.json({ 
-          valid: true, 
-          username: user.username,
-          userId: user.id 
-        });
+      if (user) {
+        console.log(`[VERIFY-KEY] 👤 User found: ${user.username}, isStreamer: ${user.isStreamer}, isBanned: ${user.isBanned}`);
+        if (user.isStreamer && !user.isBanned) {
+          console.log('[VERIFY-KEY] ✅ Valid!');
+          return res.json({ 
+            valid: true, 
+            username: user.username,
+            userId: user.id 
+          });
+        }
+      } else {
+        console.log('[VERIFY-KEY] ❌ User not found in memory');
       }
     } else {
+      console.log('[VERIFY-KEY] 🗄️ Using MongoDB');
       const user = await User.findOne({ streamKey });
       
-      if (user && user.isStreamer && !user.isBanned) {
-        return res.json({ 
-          valid: true, 
-          username: user.username,
-          userId: user._id.toString() 
-        });
+      if (user) {
+        console.log(`[VERIFY-KEY] 👤 User found: ${user.username}, isStreamer: ${user.isStreamer}, isBanned: ${user.isBanned}`);
+        if (user.isStreamer && !user.isBanned) {
+          console.log('[VERIFY-KEY] ✅ Valid!');
+          return res.json({ 
+            valid: true, 
+            username: user.username,
+            userId: user._id.toString() 
+          });
+        } else {
+          console.log(`[VERIFY-KEY] ❌ Invalid - isStreamer: ${user.isStreamer}, isBanned: ${user.isBanned}`);
+        }
+      } else {
+        console.log('[VERIFY-KEY] ❌ User not found in database');
+        // Log all stream keys in database for debugging
+        const allUsers = await User.find({}).select('username streamKey');
+        console.log(`[VERIFY-KEY] 📊 Total users in DB: ${allUsers.length}`);
+        if (allUsers.length > 0 && allUsers.length < 20) {
+          console.log('[VERIFY-KEY] 📋 All keys in DB:', allUsers.map(u => `${u.username}: ${u.streamKey?.substring(0, 15)}...`));
+        }
       }
     }
 
+    console.log('[VERIFY-KEY] ❌ Returning invalid');
     res.json({ valid: false });
   } catch (error) {
-    console.error('Verify key error:', error);
+    console.error('[VERIFY-KEY] ❌ Error:', error);
     res.json({ valid: false });
   }
 });
