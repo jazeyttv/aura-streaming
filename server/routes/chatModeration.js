@@ -14,12 +14,18 @@ const canModerate = async (userId, channelUsername) => {
     // Channel owner can always moderate
     if (channel._id.toString() === userId.toString()) return true;
     
-    // Check if user is a moderator
+    // Check if user is in channel's moderators list
+    if (channel.moderators && channel.moderators.some(modId => modId.toString() === userId.toString())) {
+      return true;
+    }
+    
+    // Check if user is a site-wide moderator or admin
     const user = await User.findById(userId);
     if (!user) return false;
     
     return user.role === 'moderator' || user.role === 'admin';
   } catch (error) {
+    console.error('canModerate error:', error);
     return false;
   }
 };
