@@ -228,12 +228,12 @@ const Dashboard = () => {
                   <div className="credential-input-group">
                     <input 
                       type="text" 
-                      value={user?.rtmpUrl || 'rtmp://localhost:1935/live'}
+                      value={user?.rtmpUrl || 'rtmp://72.23.212.188:1935/live'}
                       readOnly 
                     />
                     <button 
                       className="btn-icon"
-                      onClick={() => copyToClipboard(user?.rtmpUrl || 'rtmp://localhost:1935/live', 'url')}
+                      onClick={() => copyToClipboard(user?.rtmpUrl || 'rtmp://72.23.212.188:1935/live', 'url')}
                       title="Copy URL"
                     >
                       <Copy size={18} />

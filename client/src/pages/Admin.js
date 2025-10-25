@@ -27,7 +27,7 @@ const Admin = () => {
       const url = new URL(API_URL);
       return `rtmp://${url.hostname}:1935/live`;
     } catch {
-      return 'rtmp://localhost:1935/live';
+      return 'rtmp://72.23.212.188:1935/live';
     }
   };
   const [rtmpUrl] = useState(getRtmpUrl());
