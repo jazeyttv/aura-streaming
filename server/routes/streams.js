@@ -391,24 +391,29 @@ router.post('/regenerate-key', authMiddleware, async (req, res) => {
     if (useMemory) {
       const user = authRoutes.users.get(userId);
       
-      if (!user || !user.isStreamer) {
-        return res.status(403).json({ message: 'Not authorized' });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
       }
 
+      // Ensure user is marked as streamer
+      user.isStreamer = true;
       user.streamKey = newStreamKey;
 
-      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl });
+      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl || 'rtmp://72.23.212.188:1935/live' });
     } else {
-      const user = await User.findById(userId);
+      const user = await User.findOne({ _id: userId });
 
-      if (!user || !user.isStreamer) {
-        return res.status(403).json({ message: 'Not authorized' });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
       }
 
+      // Ensure user is marked as streamer
+      user.isStreamer = true;
       user.streamKey = newStreamKey;
       await user.save();
 
-      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl });
+      console.log(`🔑 Regenerated stream key for user: ${user.username}`);
+      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl || 'rtmp://72.23.212.188:1935/live' });
     }
   } catch (error) {
     console.error('Regenerate key error:', error);

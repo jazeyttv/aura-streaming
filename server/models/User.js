@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
   },
   isStreamer: {
     type: Boolean,
-    default: false
+    default: true
   },
   isPartner: {
     type: Boolean,
