@@ -1,0 +1,66 @@
+.hls-player-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hls-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+  object-fit: contain;
+}
+
+/* Custom video controls styling */
+.hls-video::-webkit-media-controls-panel {
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
+}
+
+/* Loading state */
+.hls-player-container.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(0, 255, 255, 0.2);
+  border-top-color: #00FFFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hls-player-container {
+    border-radius: 0;
+  }
+}
+
+/* Error state */
+.hls-player-container.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+}
+
+.hls-player-container.error::before {
+  content: '⚠️ Stream Unavailable';
+  color: #ff4444;
+  font-size: 18px;
+  font-weight: 600;
+}
+
