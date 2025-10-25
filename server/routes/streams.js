@@ -232,6 +232,74 @@ router.post('/notify-ended', async (req, res) => {
   }
 });
 
+// Regenerate stream key (MUST be before /:streamId route!)
+router.post('/regenerate-key', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    const newStreamKey = `sk_${uuidv4().replace(/-/g, '')}`;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Ensure user is marked as streamer
+      user.isStreamer = true;
+      user.streamKey = newStreamKey;
+
+      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl || 'rtmp://72.23.212.188:1935/live' });
+    } else {
+      const user = await User.findOne({ _id: userId });
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Ensure user is marked as streamer
+      user.isStreamer = true;
+      user.streamKey = newStreamKey;
+      await user.save();
+
+      console.log(`🔑 Regenerated stream key for user: ${user.username}`);
+      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl || 'rtmp://72.23.212.188:1935/live' });
+    }
+  } catch (error) {
+    console.error('Regenerate key error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get user's active stream (MUST be before /:streamId route!)
+router.get('/user/active', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const streamId = global.activeStreams.get(userId);
+
+    if (!streamId) {
+      return res.json({ stream: null });
+    }
+
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const stream = streams.get(streamId);
+      const viewerCount = global.streamViewers.get(streamId)?.size || 0;
+      res.json({ stream: stream ? { ...stream, viewerCount } : null });
+    } else {
+      const stream = await Stream.findById(streamId);
+      const viewerCount = global.streamViewers.get(streamId)?.size || 0;
+      res.json({ stream: stream ? { ...stream.toObject(), viewerCount } : null });
+    }
+  } catch (error) {
+    console.error('Get active stream error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get all live streams
 router.get('/live', async (req, res) => {
   try {
@@ -401,74 +469,6 @@ router.post('/:streamId/end', authMiddleware, async (req, res) => {
     res.json({ message: 'Stream ended successfully' });
   } catch (error) {
     console.error('End stream error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Regenerate stream key
-router.post('/regenerate-key', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
-
-    const newStreamKey = `sk_${uuidv4().replace(/-/g, '')}`;
-
-    if (useMemory) {
-      const user = authRoutes.users.get(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Ensure user is marked as streamer
-      user.isStreamer = true;
-      user.streamKey = newStreamKey;
-
-      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl || 'rtmp://72.23.212.188:1935/live' });
-    } else {
-      const user = await User.findOne({ _id: userId });
-
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Ensure user is marked as streamer
-      user.isStreamer = true;
-      user.streamKey = newStreamKey;
-      await user.save();
-
-      console.log(`🔑 Regenerated stream key for user: ${user.username}`);
-      res.json({ streamKey: newStreamKey, rtmpUrl: user.rtmpUrl || 'rtmp://72.23.212.188:1935/live' });
-    }
-  } catch (error) {
-    console.error('Regenerate key error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get user's active stream
-router.get('/user/active', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const streamId = global.activeStreams.get(userId);
-
-    if (!streamId) {
-      return res.json({ stream: null });
-    }
-
-    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
-
-    if (useMemory) {
-      const stream = streams.get(streamId);
-      const viewerCount = global.streamViewers.get(streamId)?.size || 0;
-      res.json({ stream: stream ? { ...stream, viewerCount } : null });
-    } else {
-      const stream = await Stream.findById(streamId);
-      const viewerCount = global.streamViewers.get(streamId)?.size || 0;
-      res.json({ stream: stream ? { ...stream.toObject(), viewerCount } : null });
-    }
-  } catch (error) {
-    console.error('Get active stream error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
