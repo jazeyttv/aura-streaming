@@ -562,6 +562,7 @@ app.use('/api/panels', require('./routes/panels')); // Channel panels
 app.use('/api/followers', require('./routes/followers')); // Followers/Following lists
 app.use('/api/chat-settings', require('./routes/chatSettings')); // Chat mode settings
 app.use('/api/chat-moderation', require('./routes/chatModeration')); // Chat moderation
+app.use('/api/teams', require('./routes/teams')); // Teams system
 
 // Health check
 app.get('/api/health', (req, res) => {
