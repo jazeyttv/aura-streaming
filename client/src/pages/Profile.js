@@ -9,6 +9,7 @@ import { getBadgeById } from '../config/badges';
 import UserCard from '../components/UserCard';
 import ScheduleDisplay from '../components/ScheduleDisplay';
 import PanelsDisplay from '../components/PanelsDisplay';
+import TeamDisplay from '../components/TeamDisplay';
 import './Profile.css';
 
 const Profile = () => {
@@ -503,6 +504,7 @@ const Profile = () => {
         {activeTab === 'about' && (
           <div className="channel-tab-content">
             <div className="channel-section">
+              <TeamDisplay username={username} />
               <PanelsDisplay username={username} />
               
               <div className="about-header">
