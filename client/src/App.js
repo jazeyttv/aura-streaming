@@ -12,6 +12,7 @@ import StreamView from './pages/StreamView';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Admin from './pages/Admin';
+import ChannelActions from './pages/ChannelActions';
 import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 
@@ -32,6 +33,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/channel-actions" 
+              element={
+                <PrivateRoute>
+                  <ChannelActions />
                 </PrivateRoute>
               } 
             />

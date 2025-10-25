@@ -309,6 +309,10 @@ const Dashboard = () => {
             <Activity size={18} />
             <span>Dashboard</span>
           </button>
+          <button className="sidebar-btn" onClick={() => navigate('/channel-actions')}>
+            <Zap size={18} />
+            <span>Channel Actions</span>
+          </button>
           <button className="sidebar-btn" onClick={() => navigate('/settings')}>
             <SettingsIcon size={18} />
             <span>Settings</span>
