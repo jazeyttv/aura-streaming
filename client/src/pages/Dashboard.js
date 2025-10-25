@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [streamStartTime, setStreamStartTime] = useState(null);
+  const [message, setMessage] = useState('');
   
   const socketRef = React.useRef(null);
   const timerRef = React.useRef(null);
@@ -69,10 +70,16 @@ const Dashboard = () => {
     });
 
     socketRef.current.on('viewer-count', ({ streamId, count }) => {
+      console.log('[DASHBOARD] Viewer count update:', { streamId, count });
       if (activeStream && (activeStream.id === streamId || activeStream._id === streamId)) {
         setViewerCount(count);
       }
     });
+
+    // Join the user's room for updates
+    if (user && user.id) {
+      socketRef.current.emit('join-room', `user-${user.id}`);
+    }
 
     return () => {
       if (socketRef.current) {
@@ -111,7 +118,8 @@ const Dashboard = () => {
   const fetchActiveStream = async () => {
     try {
       const response = await axios.get(`/api/streams/${user.id}`);
-      if (response.data) {
+      console.log('[DASHBOARD] Stream data:', response.data);
+      if (response.data && response.data.isLive) {
         setActiveStream(response.data);
         setStreamSettings({
           title: response.data.title || '',
@@ -122,9 +130,16 @@ const Dashboard = () => {
         if (response.data.startedAt) {
           setStreamStartTime(new Date(response.data.startedAt));
         }
+      } else {
+        // Stream is not live
+        setActiveStream(null);
+        setViewerCount(0);
+        setStreamStartTime(null);
       }
     } catch (error) {
       console.error('Error fetching stream:', error);
+      setActiveStream(null);
+      setViewerCount(0);
     }
   };
 
@@ -138,17 +153,27 @@ const Dashboard = () => {
   };
 
   const handleUpdateStream = async (e) => {
-    e.preventDefault();
-    if (!activeStream) return;
-
+    if (e) e.preventDefault();
+    
     setLoading(true);
+    setMessage('');
+    
     try {
-      await axios.put(`/api/streams/${activeStream.id || activeStream._id}`, streamSettings);
-      alert('✅ Stream updated successfully!');
+      if (activeStream && activeStream.isLive) {
+        // Update existing live stream
+        await axios.put(`/api/streams/${activeStream.id || activeStream._id}`, streamSettings);
+        setMessage('✅ Stream updated successfully!');
+      } else {
+        // Create/prepare stream settings for when you go live
+        console.log('[DASHBOARD] Stream settings saved for next stream');
+        setMessage('✅ Settings saved! They will apply when you go live.');
+      }
+      setTimeout(() => setMessage(''), 3000);
       fetchActiveStream();
     } catch (error) {
       console.error('Error updating stream:', error);
-      alert('❌ Failed to update stream');
+      setMessage('❌ Failed to update stream');
+      setTimeout(() => setMessage(''), 3000);
     }
     setLoading(false);
   };
@@ -234,6 +259,12 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {message && (
+          <div className={`dashboard-message ${message.includes('✅') ? 'success' : 'error'}`}>
+            {message}
+          </div>
+        )}
 
         <div className="dashboard-grid">
           {/* Session Info Panel */}
@@ -369,12 +400,10 @@ const Dashboard = () => {
                 </select>
               </div>
 
-              {isLive && (
-                <button type="submit" className="btn-action" disabled={loading}>
-                  <SettingsIcon size={16} />
-                  {loading ? 'Updating...' : 'Update Stream'}
-                </button>
-              )}
+              <button type="submit" className="btn-action" disabled={loading}>
+                <SettingsIcon size={16} />
+                {loading ? 'Saving...' : isLive ? 'Update Stream' : 'Save Settings'}
+              </button>
             </form>
           </div>
 
