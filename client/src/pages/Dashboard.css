@@ -45,6 +45,8 @@
   transition: all 0.2s;
   font-size: 14px;
   margin-bottom: 4px;
+  text-align: left;
+  justify-content: flex-start;
 }
 
 .sidebar-btn:hover {

@@ -429,6 +429,7 @@ app.use('/api/upload', uploadRoutes); // Image upload routes
 app.use('/api/hls-proxy', hlsProxyRoutes); // HLS proxy for HTTPS streaming
 app.use('/api/notifications', notificationRoutes); // Notifications system
 app.use('/api/channel-settings', require('./routes/channelSettings')); // Channel settings
+app.use('/api/maintenance', require('./routes/maintenance')); // Maintenance mode
 
 // Health check
 app.get('/api/health', (req, res) => {
