@@ -5,7 +5,7 @@ require('dotenv').config({ path: './config.env' });
 async function fixDatabase() {
   try {
     console.log('🔧 Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kicky');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aura');
     console.log('✅ Connected!');
 
     const db = mongoose.connection.db;

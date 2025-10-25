@@ -185,7 +185,7 @@ const addresses = getNetworkAddresses();
 
 console.log('');
 console.log('🎥 ========================================');
-console.log('   KICKY RTMP MEDIA SERVER - LIVE');
+  console.log('   AURA RTMP MEDIA SERVER - LIVE');
 console.log('========================================');
 console.log('');
 console.log('📡 RTMP ENDPOINTS:');

@@ -90,7 +90,7 @@ app.use(express.urlencoded({ extended: true }));
 // Connect to MongoDB (with fallback to in-memory storage)
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kicky', {
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aura', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -309,7 +309,7 @@ server.listen(PORT, '0.0.0.0', () => {
   
   console.log('');
   console.log('🚀 ========================================');
-  console.log('   KICKY STREAMING PLATFORM - LIVE');
+  console.log('   AURA STREAMING PLATFORM - LIVE');
   console.log('========================================');
   console.log('');
   console.log('✨ Features: Real RTMP streaming, Admin system, Enhanced chat');

@@ -48,7 +48,7 @@ const Register = () => {
         <div className="auth-card">
           <div className="auth-header">
             <UserPlus size={40} className="auth-icon" />
-            <h1>Join Kicky</h1>
+            <h1>Join AURA</h1>
             <p>Create your account and start streaming</p>
           </div>
 

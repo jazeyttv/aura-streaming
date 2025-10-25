@@ -1,7 +1,7 @@
 {
   "name": "aura-server",
   "version": "1.0.0",
-  "description": "Backend server for Kicky streaming platform",
+  "description": "Backend server for AURA streaming platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

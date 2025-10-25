@@ -35,7 +35,7 @@ const Login = () => {
           <div className="auth-header">
             <LogIn size={40} className="auth-icon" />
             <h1>Welcome Back</h1>
-            <p>Login to your Kicky account</p>
+            <p>Login to your AURA account</p>
           </div>
 
           {error && <div className="error-message">{error}</div>}

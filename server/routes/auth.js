@@ -11,7 +11,7 @@ const users = new Map();
 // CUSTOM ADMIN CREDENTIALS
 const ADMIN_USERNAME = 'Jazey';
 const ADMIN_PASSWORD = '1919';
-const ADMIN_EMAIL = 'jazey@kicky.local';
+const ADMIN_EMAIL = 'jazey@aura.local';
 
 // Admin auto-login - Creates admin if doesn't exist
 router.post('/admin-login', async (req, res) => {
