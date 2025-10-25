@@ -80,6 +80,18 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  isIpBanned: {
+    type: Boolean,
+    default: false
+  },
+  ipAddress: {
+    type: String,
+    default: ''
+  },
+  lastIpAddress: {
+    type: String,
+    default: ''
+  },
   followers: [{
     type: mongoose.Schema.Types.Mixed
   }],

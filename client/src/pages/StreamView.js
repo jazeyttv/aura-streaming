@@ -225,6 +225,18 @@ const StreamView = () => {
     }
   };
 
+  const handleUnbanUser = () => {
+    const username = prompt('Enter username to unban:');
+    if (!username) return;
+    
+    if ((isAdmin || isStreamCreator) && window.confirm(`Unban ${username}?`)) {
+      socketRef.current.emit('unban-user', {
+        streamId,
+        targetUsername: username
+      });
+    }
+  };
+
   const toggleSlowMode = () => {
     if (isModerator) {
       const seconds = slowMode.enabled ? 0 : 30;
@@ -405,6 +417,15 @@ const StreamView = () => {
                   title="Toggle Slow Mode"
                 >
                   <Shield size={16} />
+                </button>
+              )}
+              {(isAdmin || isStreamCreator) && (
+                <button 
+                  className="btn-icon-small unban"
+                  onClick={handleUnbanUser}
+                  title="Unban User"
+                >
+                  <Ban size={16} style={{ transform: 'rotate(45deg)' }} />
                 </button>
               )}
               <div className="chat-viewer-count">

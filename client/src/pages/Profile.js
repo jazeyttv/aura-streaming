@@ -142,10 +142,52 @@ const Profile = () => {
       await axios.put('/api/users/profile', editForm);
       await fetchProfile();
       setIsEditing(false);
+      alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile');
     }
+  };
+
+  const handleSendChatMessage = (e) => {
+    e.preventDefault();
+    if (!chatMessage.trim() || !socketRef.current || !currentUser) return;
+
+    const message = {
+      username: currentUser.username,
+      message: chatMessage,
+      userRole: currentUser.role,
+      userId: currentUser.id,
+      chatColor: currentUser.chatColor,
+      isPartner: currentUser.isPartner,
+      timestamp: new Date()
+    };
+
+    socketRef.current.emit('profile-chat-message', {
+      roomName: `profile_${profile.username}`,
+      message
+    });
+
+    setChatMessage('');
+  };
+
+  const handleUpdateBio = async () => {
+    if (!isOwnProfile) return;
+    
+    try {
+      await axios.put('/api/users/profile', { bio: bioText });
+      setProfile({ ...profile, bio: bioText });
+      setIsEditingBio(false);
+      alert('Bio updated successfully!');
+    } catch (error) {
+      console.error('Error updating bio:', error);
+      alert('Failed to update bio');
+    }
+  };
+
+  const startEditingBio = () => {
+    setBioText(profile.bio || '');
+    setIsEditingBio(true);
   };
 
   const getRoleBadges = () => {
@@ -295,14 +337,12 @@ const Profile = () => {
           >
             Videos
           </button>
-          {profile.isStreamer && (
-            <button 
-              className={`channel-nav-item ${activeTab === 'chat' ? 'active' : ''}`}
-              onClick={() => setActiveTab('chat')}
-            >
-              Chat
-            </button>
-          )}
+          <button 
+            className={`channel-nav-item ${activeTab === 'chat' ? 'active' : ''}`}
+            onClick={() => setActiveTab('chat')}
+          >
+            Chat
+          </button>
         </div>
       </div>
 
@@ -358,12 +398,45 @@ const Profile = () => {
         {activeTab === 'about' && (
           <div className="channel-tab-content">
             <div className="channel-section">
-              <h2>About</h2>
+              <div className="about-header">
+                <h2>About</h2>
+                {isOwnProfile && !isEditingBio && (
+                  <button className="btn-edit-bio" onClick={startEditingBio}>
+                    <Edit size={16} />
+                    Edit Bio
+                  </button>
+                )}
+              </div>
               <div className="about-card">
-                {profile.bio ? (
-                  <p className="about-description">{profile.bio}</p>
+                {isEditingBio ? (
+                  <div className="bio-edit-container">
+                    <textarea
+                      className="bio-edit-textarea"
+                      value={bioText}
+                      onChange={(e) => setBioText(e.target.value)}
+                      placeholder="Tell everyone about yourself..."
+                      maxLength={500}
+                      rows={6}
+                    />
+                    <div className="bio-edit-actions">
+                      <button className="btn btn-primary" onClick={handleUpdateBio}>
+                        Save Bio
+                      </button>
+                      <button className="btn btn-secondary" onClick={() => setIsEditingBio(false)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <p className="about-description empty">No description available.</p>
+                  <>
+                    {profile.bio ? (
+                      <p className="about-description">{profile.bio}</p>
+                    ) : (
+                      <p className="about-description empty">
+                        {isOwnProfile ? 'Click "Edit Bio" to add a description.' : 'No description available.'}
+                      </p>
+                    )}
+                  </>
                 )}
                 
                 <div className="about-details">
@@ -413,12 +486,78 @@ const Profile = () => {
           </div>
         )}
 
-        {activeTab === 'chat' && profile.isStreamer && (
+        {activeTab === 'chat' && (
           <div className="channel-tab-content">
             <div className="channel-section">
-              <h2>Chat Settings</h2>
-              <div className="empty-state">
-                <p>Chat settings coming soon.</p>
+              <h2>{profile.displayName || profile.username}'s Chat Room</h2>
+              <div className="profile-chat-container">
+                <div className="profile-chat-messages">
+                  {chatMessages.length === 0 ? (
+                    <div className="chat-empty-state">
+                      <p>No messages yet. Be the first to say hello!</p>
+                    </div>
+                  ) : (
+                    chatMessages.map((msg, index) => (
+                      <div key={index} className="profile-chat-message">
+                        <span className="profile-chat-time">
+                          {new Date(msg.timestamp).toLocaleTimeString()}
+                        </span>
+                        <span 
+                          className="profile-chat-username" 
+                          style={{ color: msg.chatColor || '#00d9ff' }}
+                        >
+                          {msg.username}
+                          {msg.isPartner && (
+                            <CheckCircle 
+                              size={12} 
+                              fill="#00ffff" 
+                              style={{ marginLeft: '4px', verticalAlign: 'middle' }} 
+                            />
+                          )}
+                          {msg.userRole === 'admin' && (
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="#00ffff"
+                              style={{ marginLeft: '4px', verticalAlign: 'middle' }}
+                            >
+                              <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+                            </svg>
+                          )}
+                          {msg.userRole === 'moderator' && (
+                            <Shield 
+                              size={12} 
+                              color="#00ffff" 
+                              style={{ marginLeft: '4px', verticalAlign: 'middle' }} 
+                            />
+                          )}
+                        </span>
+                        <span className="profile-chat-text">{msg.message}</span>
+                      </div>
+                    ))
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+                
+                {currentUser ? (
+                  <form className="profile-chat-input-container" onSubmit={handleSendChatMessage}>
+                    <input
+                      type="text"
+                      className="profile-chat-input"
+                      placeholder={`Chat as ${currentUser.username}...`}
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                    />
+                    <button type="submit" className="profile-chat-send">
+                      <Send size={18} />
+                    </button>
+                  </form>
+                ) : (
+                  <div className="profile-chat-login-prompt">
+                    <p>Please <a href="/login">login</a> to chat</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

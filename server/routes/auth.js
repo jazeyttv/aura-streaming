@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { v4: uuidv4 } = require('uuid');
+const { getClientIP } = require('../middleware/ipBanCheck');
 
 // In-memory user storage (fallback if MongoDB is not available)
 const users = new Map();
@@ -141,6 +142,9 @@ router.post('/register', async (req, res) => {
       // EVERYONE gets a stream key automatically - no exceptions!
       const streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
       
+      // Track IP address
+      const clientIP = getClientIP(req);
+      
       const newUser = {
         id: uuidv4(),
         username,
@@ -155,6 +159,8 @@ router.post('/register', async (req, res) => {
         rtmpUrl: 'rtmp://72.23.212.188:1935/live',
         isBanned: false,
         bannedUntil: null,
+        ipAddress: clientIP,
+        lastIpAddress: clientIP,
         followers: [],
         following: [],
         totalViewers: 0,
@@ -197,6 +203,9 @@ router.post('/register', async (req, res) => {
       // EVERYONE gets a stream key automatically - no exceptions!
       const streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
 
+      // Track IP address
+      const clientIP = getClientIP(req);
+
       const user = new User({
         username,
         email,
@@ -205,7 +214,9 @@ router.post('/register', async (req, res) => {
         isStreamer: true, // Everyone is a streamer by default
         role: 'user',
         streamKey,
-        rtmpUrl: 'rtmp://72.23.212.188:1935/live'
+        rtmpUrl: 'rtmp://72.23.212.188:1935/live',
+        ipAddress: clientIP,
+        lastIpAddress: clientIP
       });
 
       await user.save();
@@ -350,6 +361,11 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
 
+      // Track IP address
+      const clientIP = getClientIP(req);
+      user.lastIpAddress = user.ipAddress || clientIP;
+      user.ipAddress = clientIP;
+
       // AUTO-FIX: If user doesn't have a stream key, create one now (for old accounts)
       if (!user.streamKey) {
         user.streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
@@ -406,14 +422,21 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
 
+      // Track IP address
+      const clientIP = getClientIP(req);
+      user.lastIpAddress = user.ipAddress || clientIP;
+      user.ipAddress = clientIP;
+
       // AUTO-FIX: If user doesn't have a stream key, create one now (for old accounts)
       if (!user.streamKey) {
         user.streamKey = `sk_${uuidv4().replace(/-/g, '')}`;
         user.isStreamer = true;
         user.rtmpUrl = 'rtmp://72.23.212.188:1935/live';
-        await user.save(); // Save to MongoDB
-        console.log(`[LOGIN] ✅ Auto-generated stream key for ${user.username}`);
       }
+      
+      await user.save(); // Save IP address and stream key
+      console.log(`[LOGIN] ✅ User: ${user.username} | IP: ${clientIP}`);
+
 
       const token = jwt.sign(
         { userId: user._id, username: user.username, role: user.role },

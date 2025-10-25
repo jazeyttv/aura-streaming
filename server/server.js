@@ -17,6 +17,9 @@ const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
 const hlsProxyRoutes = require('./routes/hls-proxy');
 
+// Import IP ban middleware
+const { checkIPBan, getClientIP, initBannedIPs } = require('./middleware/ipBanCheck');
+
 // Initialize express app
 const app = express();
 const server = http.createServer(app);
@@ -65,6 +68,9 @@ const io = socketIo(server, {
     credentials: true
   }
 });
+
+// IP Ban Check Middleware - BEFORE everything else
+app.use(checkIPBan);
 
 // Middleware - Dynamic CORS
 app.use(cors({
@@ -235,6 +241,55 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('unban-user', async ({ streamId, targetUsername }) => {
+    if (socket.userRole === 'admin' || socket.userRole === 'moderator') {
+      // Find user by username to get their ID
+      const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+      let targetUserId = null;
+
+      if (useMemory) {
+        const authRoutes = require('./routes/auth');
+        for (const [userId, userData] of authRoutes.users.entries()) {
+          if (userData.username === targetUsername) {
+            targetUserId = userId;
+            break;
+          }
+        }
+      } else {
+        try {
+          const User = require('./models/User');
+          const user = await User.findOne({ username: targetUsername });
+          if (user) {
+            targetUserId = user._id.toString();
+          }
+        } catch (error) {
+          console.error('Error finding user for unban:', error);
+        }
+      }
+
+      if (targetUserId) {
+        const banned = global.bannedUsers.get(streamId);
+        if (banned && banned.has(targetUserId)) {
+          banned.delete(targetUserId);
+          
+          io.to(streamId).emit('chat-message', {
+            id: Date.now(),
+            username: 'System',
+            message: `${targetUsername} was unbanned by ${socket.username}`,
+            userRole: 'system',
+            timestamp: new Date()
+          });
+          
+          console.log(`${targetUsername} unbanned from stream ${streamId} by ${socket.username}`);
+        } else {
+          socket.emit('error-message', { message: `${targetUsername} is not banned` });
+        }
+      } else {
+        socket.emit('error-message', { message: `User ${targetUsername} not found` });
+      }
+    }
+  });
+
   socket.on('toggle-slow-mode', ({ streamId, enabled, seconds }) => {
     if (socket.userRole === 'moderator' || socket.userRole === 'admin') {
       io.to(streamId).emit('slow-mode-update', { enabled, seconds });
@@ -249,6 +304,45 @@ io.on('connection', (socket) => {
       const viewerCount = global.streamViewers.get(streamId).size;
       io.to(streamId).emit('viewer-count', viewerCount);
     }
+  });
+
+  // Profile Chat Rooms
+  socket.on('join-profile-chat', (roomName) => {
+    socket.join(roomName);
+    socket.profileRoom = roomName;
+    console.log(`User joined profile chat: ${roomName}`);
+    
+    // Send chat history for this profile room
+    if (!global.profileChatMessages) {
+      global.profileChatMessages = new Map();
+    }
+    const history = global.profileChatMessages.get(roomName) || [];
+    socket.emit('profile-chat-history', history);
+  });
+
+  socket.on('profile-chat-message', ({ roomName, message }) => {
+    if (!global.profileChatMessages) {
+      global.profileChatMessages = new Map();
+    }
+    if (!global.profileChatMessages.has(roomName)) {
+      global.profileChatMessages.set(roomName, []);
+    }
+    
+    const chatHistory = global.profileChatMessages.get(roomName);
+    chatHistory.push(message);
+    
+    // Keep only last 200 messages
+    if (chatHistory.length > 200) {
+      chatHistory.shift();
+    }
+    
+    io.to(roomName).emit('profile-chat-message', message);
+    console.log(`Profile chat message in ${roomName} from ${message.username}`);
+  });
+
+  socket.on('leave-profile-chat', (roomName) => {
+    socket.leave(roomName);
+    console.log(`User left profile chat: ${roomName}`);
   });
 
   socket.on('disconnect', () => {
@@ -304,8 +398,11 @@ app.get('/api/server-info', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   const addresses = getNetworkAddresses();
+  
+  // Initialize banned IPs from database
+  await initBannedIPs();
   
   console.log('');
   console.log('🚀 ========================================');

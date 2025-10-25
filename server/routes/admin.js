@@ -5,6 +5,7 @@ const Stream = require('../models/Stream');
 const BanRecord = require('../models/BanRecord');
 const authMiddleware = require('../middleware/auth');
 const authRoutes = require('./auth');
+const { banIP, unbanIP } = require('../middleware/ipBanCheck');
 
 // Middleware to check admin role
 const adminMiddleware = (req, res, next) => {
@@ -772,6 +773,126 @@ router.post('/users/:userId/chat-unban', authMiddleware, async (req, res) => {
     }
   } catch (error) {
     console.error('Chat unban user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// IP Ban user (admin only)
+router.post('/users/:userId/ip-ban', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.role === 'admin') {
+        return res.status(403).json({ message: 'Cannot IP ban an admin' });
+      }
+
+      user.isIpBanned = true;
+      
+      // Ban all known IPs for this user
+      if (user.ipAddress) banIP(user.ipAddress);
+      if (user.lastIpAddress && user.lastIpAddress !== user.ipAddress) {
+        banIP(user.lastIpAddress);
+      }
+
+      console.log(`🚫 IP BAN: ${user.username} | IPs: ${user.ipAddress || 'unknown'}, ${user.lastIpAddress || 'unknown'}`);
+
+      res.json({ 
+        message: 'User IP banned successfully',
+        bannedIPs: [user.ipAddress, user.lastIpAddress].filter(Boolean)
+      });
+    } else {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.role === 'admin') {
+        return res.status(403).json({ message: 'Cannot IP ban an admin' });
+      }
+
+      user.isIpBanned = true;
+      await user.save();
+      
+      // Ban all known IPs for this user
+      if (user.ipAddress) banIP(user.ipAddress);
+      if (user.lastIpAddress && user.lastIpAddress !== user.ipAddress) {
+        banIP(user.lastIpAddress);
+      }
+
+      console.log(`🚫 IP BAN: ${user.username} | IPs: ${user.ipAddress || 'unknown'}, ${user.lastIpAddress || 'unknown'}`);
+
+      res.json({ 
+        message: 'User IP banned successfully',
+        bannedIPs: [user.ipAddress, user.lastIpAddress].filter(Boolean)
+      });
+    }
+  } catch (error) {
+    console.error('IP ban user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// IP Unban user (admin only)
+router.post('/users/:userId/ip-unban', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const user = authRoutes.users.get(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.isIpBanned = false;
+      
+      // Unban all known IPs for this user
+      if (user.ipAddress) unbanIP(user.ipAddress);
+      if (user.lastIpAddress && user.lastIpAddress !== user.ipAddress) {
+        unbanIP(user.lastIpAddress);
+      }
+
+      console.log(`✅ IP UNBAN: ${user.username} | IPs: ${user.ipAddress || 'unknown'}, ${user.lastIpAddress || 'unknown'}`);
+
+      res.json({ 
+        message: 'User IP unbanned successfully',
+        unbannedIPs: [user.ipAddress, user.lastIpAddress].filter(Boolean)
+      });
+    } else {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.isIpBanned = false;
+      await user.save();
+      
+      // Unban all known IPs for this user
+      if (user.ipAddress) unbanIP(user.ipAddress);
+      if (user.lastIpAddress && user.lastIpAddress !== user.ipAddress) {
+        unbanIP(user.lastIpAddress);
+      }
+
+      console.log(`✅ IP UNBAN: ${user.username} | IPs: ${user.ipAddress || 'unknown'}, ${user.lastIpAddress || 'unknown'}`);
+
+      res.json({ 
+        message: 'User IP unbanned successfully',
+        unbannedIPs: [user.ipAddress, user.lastIpAddress].filter(Boolean)
+      });
+    }
+  } catch (error) {
+    console.error('IP unban user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
