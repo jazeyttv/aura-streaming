@@ -7,6 +7,7 @@ import { User, Calendar, Edit, Heart, Shield, Crown, CheckCircle, Bell, Settings
 import { SOCKET_URL } from '../config';
 import { getBadgeById } from '../config/badges';
 import UserCard from '../components/UserCard';
+import ScheduleDisplay from '../components/ScheduleDisplay';
 import './Profile.css';
 
 const Profile = () => {
@@ -570,10 +571,7 @@ const Profile = () => {
         {activeTab === 'schedule' && (
           <div className="channel-tab-content">
             <div className="channel-section">
-              <h2>Stream Schedule</h2>
-              <div className="empty-state">
-                <p>No scheduled streams yet.</p>
-              </div>
+              <ScheduleDisplay username={username} />
             </div>
           </div>
         )}

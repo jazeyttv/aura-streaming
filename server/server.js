@@ -437,6 +437,7 @@ app.use('/api/maintenance', require('./routes/maintenance')); // Maintenance mod
 app.use('/api/schedule', require('./routes/schedule')); // Stream schedule
 app.use('/api/panels', require('./routes/panels')); // Channel panels
 app.use('/api/followers', require('./routes/followers')); // Followers/Following lists
+app.use('/api/chat-settings', require('./routes/chatSettings')); // Chat mode settings
 
 // Health check
 app.get('/api/health', (req, res) => {

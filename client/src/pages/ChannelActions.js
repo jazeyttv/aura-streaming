@@ -44,6 +44,14 @@ const ChannelActions = () => {
   // Chat Color
   const [chatColor, setChatColor] = useState('#FFFFFF');
 
+  // Chat Modes
+  const [chatSettings, setChatSettings] = useState({
+    followerOnly: false,
+    followerOnlyDuration: 0,
+    subscriberOnly: false,
+    emotesOnly: false
+  });
+
   const colors = [
     '#FFE4C4', '#FFA500', '#FFC300', '#FFB6C1', '#FF69B4', '#FF0000', '#C8A2C8', '#9B59B6',
     '#87CEEB', '#4169E1', '#0000FF', '#90EE90', '#00FF00', '#00CED1', '#00FFFF', '#FF1493'
@@ -65,6 +73,15 @@ const ChannelActions = () => {
       setSlowMode(response.data.slowMode || { enabled: false, duration: 0 });
       setFollowerGoal(response.data.followerGoal || '');
       setChatColor(response.data.chatColor || user.chatColor || '#FFFFFF');
+      
+      // Fetch chat settings
+      const chatResponse = await axios.get(`/api/chat-settings/${user.username}`);
+      setChatSettings(chatResponse.data.chatSettings || {
+        followerOnly: false,
+        followerOnlyDuration: 0,
+        subscriberOnly: false,
+        emotesOnly: false
+      });
     } catch (error) {
       console.error('Error fetching settings:', error);
     }
@@ -148,6 +165,18 @@ const ChannelActions = () => {
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage('❌ Failed to update color');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const saveChatSettings = async (newSettings) => {
+    try {
+      await axios.put('/api/chat-settings', { chatSettings: newSettings });
+      setChatSettings(newSettings);
+      setMessage('✅ Chat settings updated');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Failed to update chat settings');
       setTimeout(() => setMessage(''), 3000);
     }
   };
