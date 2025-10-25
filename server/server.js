@@ -17,6 +17,7 @@ const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
 const hlsProxyRoutes = require('./routes/hls-proxy');
 const uploadRoutes = require('./routes/upload');
+const notificationRoutes = require('./routes/notifications');
 
 // Import IP ban middleware
 const { checkIPBan, getClientIP, initBannedIPs } = require('./middleware/ipBanCheck');
@@ -426,6 +427,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/upload', uploadRoutes); // Image upload routes
 app.use('/api/hls-proxy', hlsProxyRoutes); // HLS proxy for HTTPS streaming
+app.use('/api/notifications', notificationRoutes); // Notifications system
 
 // Health check
 app.get('/api/health', (req, res) => {

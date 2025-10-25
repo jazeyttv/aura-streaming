@@ -1,0 +1,68 @@
+[33m5680daa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Setup ngrok for local streaming - global RTMP access
+[33md6dc6df[m Remove IVS player - clean up console errors
+[33mc1a49c4[m Add Amazon IVS Player with toggle switcher - HLS remains default and working
+[33m4647868[m[33m ([m[1;33mtag: [m[1;33mv1.0-stable-before-ivs[m[33m)[m Add clickable usernames with beautiful user card popups in chat
+[33mb50fb1a[m Fix upload button emojis and URL validation for image uploads
+[33mcb5ad63[m Add complete badge selector and image upload system to Customize Channel and Settings
+[33m93b93b0[m FIX: Badge persistence + Add banner to Settings - customBadges now returned in admin users API, Badges persist on refresh, Added banner field to Settings page, Customize Channel modal properly populates with profile data, All profile updates save globally
+[33m7cd80dd[m FEAT: Add Save/Cancel buttons to badge management modal - Changes staged in temp state before saving, Cancel button discards changes, Save Changes button commits to database, Prevents accidental badge removal on refresh
+[33mfbd49a5[m FIX: Add banner field to User model + Include in profile responses - Banner field now defined in database schema, Banner included in all profile API responses, Avatar and banner now save globally (server-side), All profile data persists across devices and refreshes
+[33m4f08a17[m FEAT: Admin badge assignment UI + FIX: Banner not saving - Added badge management button in admin panel with purple Award icon, Click-to-toggle badge assignment modal with visual grid, Fixed banner field not being saved in profile updates, Banner now properly saves and displays
+
+                   SSUUMMMMAARRYY OOFF LLEESSSS CCOOMMMMAANNDDSS
+
+      Commands marked with * may be preceded by a number, _N.
+      Notes in parentheses indicate the behavior if _N is given.
+      A key preceded by a caret indicates the Ctrl key; thus ^K is ctrl-K.
+
+  h  H                 Display this help.
+  q  :q  Q  :Q  ZZ     Exit.
+ ---------------------------------------------------------------------------
+
+                           MMOOVVIINNGG
+
+  e  ^E  j  ^N  CR  *  Forward  one line   (or _N lines).
+  y  ^Y  k  ^K  ^P  *  Backward one line   (or _N lines).
+  ESC-j             *  Forward  one file line (or _N file lines).
+  ESC-k             *  Backward one file line (or _N file lines).
+  f  ^F  ^V  SPACE  *  Forward  one window (or _N lines).
+  b  ^B  ESC-v      *  Backward one window (or _N lines).
+  z                 *  Forward  one window (and set window to _N).
+  w                 *  Backward one window (and set window to _N).
+  ESC-SPACE         *  Forward  one window, but don't stop at end-of-file.
+  ESC-b             *  Backward one window, but don't stop at beginning-of-file.
+  d  ^D             *  Forward  one half-window (and set half-window to _N).
+  u  ^U             *  Backward one half-window (and set half-window to _N).
+  ESC-)  RightArrow *  Right one half screen width (or _N positions).
+  ESC-(  LeftArrow  *  Left  one half screen width (or _N positions).
+  ESC-}  ^RightArrow   Right to last column displayed.
+  ESC-{  ^LeftArrow    Left  to first column.
+  F                    Forward forever; like "tail -f".
+  ESC-F                Like F but stop when search pattern is found.
+  r  ^R  ^L            Repaint screen.
+  R                    Repaint screen, discarding buffered input.
+        ---------------------------------------------------
+        Default "window" is the screen height.
+        Default "half-window" is half of the screen height.
+ ---------------------------------------------------------------------------
+
+                          SSEEAARRCCHHIINNGG
+
+  /_p_a_t_t_e_r_n          *  Search forward for (_N-th) matching line.
+  ?_p_a_t_t_e_r_n          *  Search backward for (_N-th) matching line.
+  n                 *  Repeat previous search (for _N-th occurrence).
+  N                 *  Repeat previous search in reverse direction.
+  ESC-n             *  Repeat previous search, spanning files.
+  ESC-N             *  Repeat previous search, reverse dir. & spanning files.
+  ^O^N  ^On         *  Search forward for (_N-th) OSC8 hyperlink.
+  ^O^P  ^Op         *  Search backward for (_N-th) OSC8 hyperlink.
+  ^O^L  ^Ol            Jump to the currently selected OSC8 hyperlink.
+  ESC-u                Undo (toggle) search highlighting.
+  ESC-U                Clear search highlighting.
+  &_p_a_t_t_e_r_n          *  Display only matching lines.
+        ---------------------------------------------------
+		Search is case-sensitive unless changed with -i or -I.
+        A search pattern may begin with one or more of:
+        ^N or !  Search for NON-matching lines.
+        ^E or *  Search multiple files (pass thru END OF FILE).
+        ^F or @  Start search at FIRST file (for /) or last file (for ?).

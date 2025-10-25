@@ -118,6 +118,33 @@ const userSchema = new mongoose.Schema({
     type: String, // The badge ID the user has chosen to display
     default: null
   },
+  // Social Media Links
+  socialMedia: {
+    instagram: {
+      type: String,
+      default: ''
+    },
+    twitter: {
+      type: String,
+      default: ''
+    },
+    facebook: {
+      type: String,
+      default: ''
+    },
+    youtube: {
+      type: String,
+      default: ''
+    },
+    discord: {
+      type: String,
+      default: ''
+    },
+    tiktok: {
+      type: String,
+      default: ''
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

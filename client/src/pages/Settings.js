@@ -21,6 +21,15 @@ const Settings = () => {
     banner: user?.banner || ''
   });
 
+  const [socialMedia, setSocialMedia] = useState({
+    instagram: user?.socialMedia?.instagram || '',
+    twitter: user?.socialMedia?.twitter || '',
+    facebook: user?.socialMedia?.facebook || '',
+    youtube: user?.socialMedia?.youtube || '',
+    discord: user?.socialMedia?.discord || '',
+    tiktok: user?.socialMedia?.tiktok || ''
+  });
+
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
     confirmPassword: ''

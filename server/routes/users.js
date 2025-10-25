@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/auth');
 const authRoutes = require('./auth');
 const bcrypt = require('bcryptjs');
 const { getAllBadges, isValidBadgeId, getBadgeById } = require('../config/badges');
+const { createFollowNotification, emitNotification } = require('../utils/notifications');
 
 // Get user profile
 router.get('/:username', async (req, res) => {
@@ -271,6 +272,19 @@ router.post('/:userId/follow', authMiddleware, async (req, res) => {
       follower.following.push(userId);
       userToFollow.followers.push(followerId);
 
+      // Create follow notification (in-memory mode - won't persist)
+      const notification = await createFollowNotification(
+        followerId,
+        follower.username,
+        userId
+      );
+
+      // Emit real-time notification
+      if (notification) {
+        const io = req.app.get('io');
+        emitNotification(io, notification);
+      }
+
       res.json({ message: 'User followed successfully', isFollowing: true });
     } else {
       const userToFollow = await User.findById(userId);
@@ -299,6 +313,19 @@ router.post('/:userId/follow', authMiddleware, async (req, res) => {
 
       await follower.save();
       await userToFollow.save();
+
+      // Create follow notification
+      const notification = await createFollowNotification(
+        followerId,
+        follower.username,
+        userId
+      );
+
+      // Emit real-time notification
+      if (notification) {
+        const io = req.app.get('io');
+        emitNotification(io, notification);
+      }
 
       console.log('Follow successful');
       res.json({ message: 'User followed successfully', isFollowing: true });
