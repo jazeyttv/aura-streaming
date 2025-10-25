@@ -15,6 +15,7 @@ const streamRoutes = require('./routes/streams');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
+const hlsProxyRoutes = require('./routes/hls-proxy');
 
 // Initialize express app
 const app = express();
@@ -278,6 +279,7 @@ app.use('/api/streams', streamRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/hls-proxy', hlsProxyRoutes); // HLS proxy for HTTPS streaming
 
 // Health check
 app.get('/api/health', (req, res) => {
