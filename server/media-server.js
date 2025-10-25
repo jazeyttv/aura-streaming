@@ -87,10 +87,17 @@ nms.on('prePublish', (id, StreamPath, args) => {
   }
 
   // Verify stream key with main server (don't use async/await here)
+  console.log(`[RTMP] 🔍 Verifying key with backend: ${API_SERVER}/api/streams/verify-key`);
   axios.post(`${API_SERVER}/api/streams/verify-key`, {
     streamKey: streamKey
+  }, {
+    timeout: 10000, // 10 second timeout
+    headers: {
+      'Content-Type': 'application/json'
+    }
   })
   .then(response => {
+    console.log(`[RTMP] 📥 Verification response:`, response.data);
     if (response.data.valid) {
       console.log(`[RTMP] ✅ Stream key validated for: ${response.data.username}`);
       // Store BEFORE the stream starts
@@ -102,13 +109,21 @@ nms.on('prePublish', (id, StreamPath, args) => {
       });
       console.log('[RTMP] 💾 Stored stream info in activeStreamKeys');
     } else {
-      console.log('[RTMP] ❌ Invalid stream key');
+      console.log('[RTMP] ❌ Invalid stream key - Backend returned valid:false');
       let session = nms.getSession(id);
       session.reject();
     }
   })
   .catch(error => {
-    console.error('[RTMP] Error verifying stream key:', error.message);
+    console.error('[RTMP] ❌ Error verifying stream key:', error.message);
+    if (error.response) {
+      console.error('[RTMP] Response status:', error.response.status);
+      console.error('[RTMP] Response data:', error.response.data);
+    } else if (error.request) {
+      console.error('[RTMP] No response received from backend');
+    } else {
+      console.error('[RTMP] Request setup error:', error.message);
+    }
     let session = nms.getSession(id);
     session.reject();
   });

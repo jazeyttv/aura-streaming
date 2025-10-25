@@ -25,43 +25,43 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
         enableWorker: true,
         lowLatencyMode: true,
         
-        // AGGRESSIVE BUFFERING - NO MORE PAUSING!
+        // BUFFERING FOR SLOW CONNECTIONS - Anti-stall settings
         backBufferLength: 0, // Clear old segments immediately
-        maxBufferLength: 10, // Only buffer 10 seconds ahead
-        maxMaxBufferLength: 15, // Max 15 seconds
-        maxBufferSize: 30 * 1000 * 1000, // 30MB max
-        maxBufferHole: 0.1, // Fill small gaps quickly
+        maxBufferLength: 30, // Buffer 30 seconds ahead (increased from 10)
+        maxMaxBufferLength: 60, // Max 60 seconds (increased from 15)
+        maxBufferSize: 60 * 1000 * 1000, // 60MB max (increased from 30)
+        maxBufferHole: 0.5, // Allow larger gaps before recovery
         
-        // FAST LOADING
-        highBufferWatchdogPeriod: 1, // Check buffer every 1 second
-        nudgeOffset: 0.05, // Small nudges for smooth playback
-        nudgeMaxRetry: 10, // Try harder to fix issues
-        maxFragLookUpTolerance: 0.1, // Find fragments faster
+        // PATIENT LOADING - Wait longer for slow segments
+        highBufferWatchdogPeriod: 2, // Check buffer every 2 seconds
+        nudgeOffset: 0.1, // Larger nudges
+        nudgeMaxRetry: 20, // Try even harder
+        maxFragLookUpTolerance: 0.5, // More tolerant fragment lookup
         
-        // LIVE STREAMING OPTIMIZATION
-        liveSyncDurationCount: 2, // Stay closer to live edge
-        liveMaxLatencyDurationCount: 4, // Max 4 segments behind
+        // LIVE STREAMING OPTIMIZATION - More buffer tolerance
+        liveSyncDurationCount: 5, // More segments for stability (increased from 2)
+        liveMaxLatencyDurationCount: 10, // Max 10 segments behind (increased from 4)
         liveDurationInfinity: true, // Allow infinite live streams
         liveBackBufferLength: 0, // Don't keep old live data
-        maxLiveSyncPlaybackRate: 2.0, // Speed up to catch up
+        maxLiveSyncPlaybackRate: 1.5, // Slower catchup (reduced from 2.0)
         
-        // INSTANT START
+        // PATIENT START - Let it buffer before playing
         testBandwidth: false, // Don't test, just start!
         progressive: true,
         startLevel: 0, // Start with lowest quality for instant playback
         autoStartLoad: true,
         capLevelToPlayerSize: false, // Don't limit based on player size
         
-        // AGGRESSIVE RETRIES
-        manifestLoadingTimeOut: 5000, // 5 seconds
-        manifestLoadingMaxRetry: 10, // Try 10 times
-        manifestLoadingRetryDelay: 500, // Retry faster (0.5s)
-        levelLoadingTimeOut: 5000,
-        levelLoadingMaxRetry: 10,
-        levelLoadingRetryDelay: 500,
-        fragLoadingTimeOut: 10000,
-        fragLoadingMaxRetry: 20, // Try VERY hard
-        fragLoadingRetryDelay: 300, // Retry super fast (0.3s)
+        // SUPER PATIENT RETRIES - Wait much longer for slow proxy
+        manifestLoadingTimeOut: 10000, // 10 seconds (increased from 5)
+        manifestLoadingMaxRetry: 15, // Try 15 times
+        manifestLoadingRetryDelay: 1000, // Wait 1 second between retries
+        levelLoadingTimeOut: 10000, // 10 seconds
+        levelLoadingMaxRetry: 15,
+        levelLoadingRetryDelay: 1000,
+        fragLoadingTimeOut: 45000, // 45 SECONDS for slow proxy (increased from 10)
+        fragLoadingMaxRetry: 10, // Try 10 times (reduced, but with longer timeout)
+        fragLoadingRetryDelay: 1000, // Wait 1 second between retries
         
         // SMOOTH PLAYBACK
         abrEwmaDefaultEstimate: 500000, // Assume 500kbps for start
