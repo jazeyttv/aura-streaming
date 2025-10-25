@@ -7,8 +7,9 @@ import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
 import UserCard from '../components/UserCard';
 import ModTools from '../components/ModTools';
-import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift } from 'lucide-react';
+import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
+import ReportModal from '../components/ReportModal';
 import './StreamView.css';
 
 const StreamView = () => {
@@ -29,6 +30,7 @@ const StreamView = () => {
   const [showModTools, setShowModTools] = useState(false);
   const [modTargetUser, setModTargetUser] = useState(null);
   const [channelMods, setChannelMods] = useState([]);
+  const [showReportModal, setShowReportModal] = useState(false);
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -428,12 +430,22 @@ const StreamView = () => {
               {/* Action Buttons */}
               <div className="stream-actions-kick">
                 {user && user.username !== stream.streamerUsername && (
-                  <button 
+                  <button
                     className={`btn-follow-kick ${isFollowing ? 'following' : ''}`}
                     onClick={handleFollow}
                   >
                     <Heart size={18} fill={isFollowing ? 'currentColor' : 'none'} />
                     {isFollowing ? 'Following' : 'Follow'}
+                  </button>
+                )}
+
+                {user && !isStreamCreator && (
+                  <button
+                    className="btn-report-stream"
+                    onClick={() => setShowReportModal(true)}
+                    title="Report stream"
+                  >
+                    <Flag size={18} />
                   </button>
                 )}
                 {stream.streamer?.isAffiliate && (
@@ -597,6 +609,13 @@ const StreamView = () => {
             setShowModTools(false);
             setModTargetUser(null);
           }}
+        />
+      )}
+
+      {showReportModal && stream && (
+        <ReportModal
+          stream={stream}
+          onClose={() => setShowReportModal(false)}
         />
       )}
     </div>

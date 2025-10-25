@@ -257,6 +257,27 @@
   border: 2px solid #00d9ff;
 }
 
+.btn-report-stream {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  border: 1px solid #ff4444;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-report-stream:hover {
+  background: rgba(255, 68, 68, 0.2);
+  border-color: #ff6666;
+  transform: translateY(-1px);
+}
+
 .btn-gift-kick {
   background: #26262c;
   color: #efeff1;

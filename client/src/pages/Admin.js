@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw, Trash2, MessageCircle, X, Search, Info, Award } from 'lucide-react';
+import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw, Trash2, MessageCircle, X, Search, Info, Award, Flag, AlertTriangle } from 'lucide-react';
 import { API_URL } from '../config';
 import { getAllBadges } from '../config/badges';
 import './Admin.css';
@@ -33,6 +33,10 @@ const Admin = () => {
   const [tempBadgeSelection, setTempBadgeSelection] = useState([]);
   const [maintenanceMode, setMaintenanceMode] = useState({ enabled: false, message: '' });
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [reportFilter, setReportFilter] = useState('pending');
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [adminNotes, setAdminNotes] = useState('');
   
   // Dynamically determine RTMP URL from API_URL
   const getRtmpUrl = () => {
@@ -54,6 +58,7 @@ const Admin = () => {
     fetchStats();
     fetchUsers();
     fetchMaintenanceStatus();
+    fetchReports();
   }, [user, navigate]);
 
   useEffect(() => {
@@ -122,6 +127,49 @@ const Admin = () => {
         enabled: false,
         message: '🔧 Website is currently under maintenance. Please check back soon!'
       });
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      const response = await axios.get(`/api/reports/admin/all?status=${reportFilter}`);
+      setReports(response.data);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchReports();
+    }
+  }, [reportFilter]);
+
+  const handleAcceptReport = async (reportId) => {
+    if (!window.confirm('Accept this report and delete the stream?')) return;
+
+    try {
+      await axios.post(`/api/reports/admin/${reportId}/accept`, { adminNotes });
+      alert('Report accepted and stream removed');
+      setSelectedReport(null);
+      setAdminNotes('');
+      fetchReports();
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to accept report');
+    }
+  };
+
+  const handleRejectReport = async (reportId) => {
+    if (!window.confirm('Reject this report?')) return;
+
+    try {
+      await axios.post(`/api/reports/admin/${reportId}/reject`, { adminNotes });
+      alert('Report rejected');
+      setSelectedReport(null);
+      setAdminNotes('');
+      fetchReports();
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to reject report');
     }
   };
 
@@ -536,6 +584,90 @@ const Admin = () => {
         </div>
 
         {/* Users Management */}
+        {/* Reports Management */}
+        <div className="admin-section">
+          <div className="section-header">
+            <h2><Flag size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Stream Reports</h2>
+            <select 
+              className="filter-select"
+              value={reportFilter}
+              onChange={(e) => setReportFilter(e.target.value)}
+            >
+              <option value="all">All Reports</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div className="reports-list">
+            {reports.length === 0 ? (
+              <div className="no-data">
+                <AlertTriangle size={48} />
+                <p>No {reportFilter !== 'all' ? reportFilter : ''} reports found</p>
+              </div>
+            ) : (
+              reports.map(report => (
+                <div key={report._id} className={`report-card status-${report.status}`}>
+                  <div className="report-header">
+                    <div className="report-info">
+                      <span className={`report-status ${report.status}`}>
+                        {report.status.toUpperCase()}
+                      </span>
+                      <span className="report-date">
+                        {new Date(report.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <span className="report-reason">{report.reason}</span>
+                  </div>
+
+                  <div className="report-body">
+                    <div className="report-detail">
+                      <strong>Stream:</strong> {report.stream?.title || 'Deleted'} ({report.stream?.category || 'N/A'})
+                    </div>
+                    <div className="report-detail">
+                      <strong>Streamer:</strong> {report.streamer?.username || 'Unknown'}
+                    </div>
+                    <div className="report-detail">
+                      <strong>Reported by:</strong> {report.reportedBy?.username || 'Unknown'}
+                    </div>
+                    {report.additionalInfo && (
+                      <div className="report-detail">
+                        <strong>Additional Info:</strong> {report.additionalInfo}
+                      </div>
+                    )}
+                    {report.reviewedBy && (
+                      <div className="report-detail">
+                        <strong>Reviewed by:</strong> {report.reviewedBy.username} on {new Date(report.reviewedAt).toLocaleDateString()}
+                      </div>
+                    )}
+                    {report.adminNotes && (
+                      <div className="report-detail">
+                        <strong>Admin Notes:</strong> {report.adminNotes}
+                      </div>
+                    )}
+                  </div>
+
+                  {report.status === 'pending' && (
+                    <div className="report-actions">
+                      <button
+                        className="btn-action-view"
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setAdminNotes('');
+                        }}
+                      >
+                        <Eye size={14} />
+                        Review
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         <div className="admin-section">
           <div className="section-header">
             <h2>User Management</h2>
@@ -894,6 +1026,92 @@ const Admin = () => {
                   <strong>Joined:</strong>
                   <span>{new Date(selectedUser.createdAt).toLocaleString()}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Review Modal */}
+      {selectedReport && (
+        <div className="modal-overlay" onClick={() => setSelectedReport(null)}>
+          <div className="modal-content report-review-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Flag size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                Review Report
+              </h2>
+              <button className="btn-close" onClick={() => setSelectedReport(null)}>
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="report-review-section">
+                <h3>Report Details</h3>
+                <div className="report-detail-full">
+                  <strong>Reason:</strong> {selectedReport.reason}
+                </div>
+                <div className="report-detail-full">
+                  <strong>Stream:</strong> {selectedReport.stream?.title || 'Deleted'} - {selectedReport.stream?.category || 'N/A'}
+                </div>
+                <div className="report-detail-full">
+                  <strong>Streamer:</strong> {selectedReport.streamer?.username}
+                </div>
+                <div className="report-detail-full">
+                  <strong>Reported by:</strong> {selectedReport.reportedBy?.username}
+                </div>
+                <div className="report-detail-full">
+                  <strong>Date:</strong> {new Date(selectedReport.createdAt).toLocaleString()}
+                </div>
+                {selectedReport.additionalInfo && (
+                  <div className="report-detail-full">
+                    <strong>Additional Information:</strong>
+                    <p style={{ marginTop: '8px', color: '#ccc' }}>{selectedReport.additionalInfo}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="report-review-section">
+                <h3>Admin Notes</h3>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add notes about your decision (optional)..."
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontFamily: 'inherit'
+                  }}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button 
+                  className="btn btn-danger"
+                  onClick={() => handleAcceptReport(selectedReport._id)}
+                >
+                  <CheckCircle size={16} />
+                  Accept Report & Delete Stream
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => handleRejectReport(selectedReport._id)}
+                >
+                  <X size={16} />
+                  Reject Report
+                </button>
+                <button 
+                  className="btn btn-outline"
+                  onClick={() => setSelectedReport(null)}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
