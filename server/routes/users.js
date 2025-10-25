@@ -72,7 +72,7 @@ router.get('/:username', async (req, res) => {
 // Update user profile
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
-    const { username, displayName, bio, avatar, banner } = req.body;
+    const { username, displayName, bio, avatar, banner, socialMedia } = req.body;
     const userId = req.user.userId;
     const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
 
@@ -96,6 +96,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
       if (bio !== undefined) user.bio = bio;
       if (avatar !== undefined) user.avatar = avatar;
       if (banner !== undefined) user.banner = banner;
+      if (socialMedia !== undefined) user.socialMedia = socialMedia;
 
       res.json({
         user: {
@@ -106,6 +107,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
           bio: user.bio,
           avatar: user.avatar,
           banner: user.banner,
+          socialMedia: user.socialMedia || {},
           isStreamer: user.isStreamer,
           role: user.role,
           chatColor: user.chatColor || '#FFFFFF',
@@ -133,6 +135,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
       if (bio !== undefined) user.bio = bio;
       if (avatar !== undefined) user.avatar = avatar;
       if (banner !== undefined) user.banner = banner;
+      if (socialMedia !== undefined) user.socialMedia = socialMedia;
 
       await user.save();
 
@@ -145,6 +148,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
           bio: user.bio,
           avatar: user.avatar,
           banner: user.banner,
+          socialMedia: user.socialMedia || {},
           isStreamer: user.isStreamer,
           role: user.role,
           chatColor: user.chatColor || '#FFFFFF',

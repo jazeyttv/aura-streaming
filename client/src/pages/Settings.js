@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Key, Bell, Shield, Save } from 'lucide-react';
+import { User, Key, Bell, Shield, Save, Share2 } from 'lucide-react';
 import axios from 'axios';
 import { getBadgeById } from '../config/badges';
 import './Settings.css';
@@ -133,6 +133,27 @@ const Settings = () => {
     setLoading(false);
   };
 
+  const handleSocialMediaUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const response = await axios.put('/api/users/profile', { socialMedia });
+      
+      // Update user in context and localStorage
+      const updatedUser = { ...user, socialMedia: response.data.user.socialMedia };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      setMessage('Social media links updated successfully!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Failed to update social media');
+    }
+    setLoading(false);
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -193,6 +214,14 @@ const Settings = () => {
             >
               <Key size={18} />
               <span>Password</span>
+            </button>
+            
+            <button
+              className={`settings-nav-item ${activeTab === 'social' ? 'active' : ''}`}
+              onClick={() => setActiveTab('social')}
+            >
+              <Share2 size={18} />
+              <span>Social Media</span>
             </button>
             
             <button
@@ -417,6 +446,80 @@ const Settings = () => {
                 <button type="submit" className="btn btn-primary" disabled={loading}>
                   <Save size={18} />
                   {loading ? 'Updating...' : 'Update Password'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {activeTab === 'social' && (
+            <div className="settings-section">
+              <h2>Social Media</h2>
+              <p className="section-description">Add your social media profiles to appear on your channel</p>
+
+              <form onSubmit={handleSocialMediaUpdate} className="settings-form">
+                <div className="form-group">
+                  <label>Instagram</label>
+                  <input
+                    type="text"
+                    value={socialMedia.instagram}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Twitter</label>
+                  <input
+                    type="text"
+                    value={socialMedia.twitter}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Facebook</label>
+                  <input
+                    type="text"
+                    value={socialMedia.facebook}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, facebook: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>YouTube</label>
+                  <input
+                    type="text"
+                    value={socialMedia.youtube}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, youtube: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Discord</label>
+                  <input
+                    type="text"
+                    value={socialMedia.discord}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, discord: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>TikTok</label>
+                  <input
+                    type="text"
+                    value={socialMedia.tiktok}
+                    onChange={(e) => setSocialMedia({ ...socialMedia, tiktok: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  <Save size={18} />
+                  {loading ? 'Saving...' : 'Save changes'}
                 </button>
               </form>
             </div>
