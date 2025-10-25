@@ -24,6 +24,10 @@ const Profile = () => {
     avatar: '',
     banner: ''
   });
+  const [availableBadges, setAvailableBadges] = useState([]);
+  const [selectedBadgeForEdit, setSelectedBadgeForEdit] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ avatar: false, banner: false });
 
   // Chat state
   const [chatMessages, setChatMessages] = useState([]);
@@ -90,6 +94,7 @@ const Profile = () => {
         avatar: response.data.avatar || '',
         banner: response.data.banner || ''
       });
+      setSelectedBadgeForEdit(response.data.selectedBadge || null);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -140,13 +145,80 @@ const Profile = () => {
     e.preventDefault();
     
     try {
+      // Update profile info
       await axios.put('/api/users/profile', editForm);
+      
+      // Update selected badge if changed
+      if (selectedBadgeForEdit !== profile.selectedBadge) {
+        await axios.post('/api/badges/select', { badgeId: selectedBadgeForEdit });
+      }
+      
       await fetchProfile();
       setIsEditing(false);
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile');
+    }
+  };
+
+  const fetchMyBadges = async () => {
+    if (!currentUser) return;
+    try {
+      const response = await axios.get('/api/badges/my-badges');
+      setAvailableBadges(response.data.customBadges || []);
+    } catch (error) {
+      console.error('Error fetching badges:', error);
+    }
+  };
+
+  // Fetch badges when opening edit modal
+  useEffect(() => {
+    if (isEditing && isOwnProfile) {
+      fetchMyBadges();
+    }
+  }, [isEditing, isOwnProfile]);
+
+  const handleFileUpload = async (event, type) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload an image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadProgress({ ...uploadProgress, [type]: true });
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append(type, file);
+
+    try {
+      const response = await axios.post(`/api/upload/${type}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Update the form with the uploaded file URL
+      const uploadedUrl = response.data.url;
+      setEditForm({ ...editForm, [type]: uploadedUrl });
+      alert(`${type === 'avatar' ? 'Avatar' : 'Banner'} uploaded successfully!`);
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert(error.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setUploadProgress({ ...uploadProgress, [type]: false });
+      setUploading(false);
     }
   };
 
@@ -262,7 +334,10 @@ const Profile = () => {
     <div className="channel-page">
       {/* Channel Banner */}
       <div className="channel-banner" style={{
-        backgroundImage: profile.banner ? `url(${profile.banner})` : 'linear-gradient(135deg, #1a1a1f 0%, #26262c 100%)'
+        backgroundImage: (profile.banner && profile.banner.trim() !== '') 
+          ? `url(${profile.banner})` 
+          : 'linear-gradient(135deg, #1a1a1f 0%, #26262c 100%)',
+        backgroundColor: '#1a1a1f'
       }}>
         {profile.isStreamer && !profile.isLive && (
           <div className="offline-badge">OFFLINE</div>
@@ -634,24 +709,115 @@ const Profile = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Avatar URL</label>
-                  <input
-                    type="url"
-                    value={editForm.avatar}
-                    onChange={(e) => setEditForm({...editForm, avatar: e.target.value})}
-                    placeholder="https://example.com/avatar.jpg"
-                  />
+                  <label>Avatar</label>
+                  <div className="upload-section">
+                    <input
+                      type="url"
+                      value={editForm.avatar}
+                      onChange={(e) => setEditForm({...editForm, avatar: e.target.value})}
+                      placeholder="https://example.com/avatar.jpg or upload below"
+                      className="url-input"
+                    />
+                    <div className="upload-or">OR</div>
+                    <div className="file-upload-wrapper">
+                      <input
+                        type="file"
+                        id="avatar-upload"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'avatar')}
+                        style={{ display: 'none' }}
+                        disabled={uploading}
+                      />
+                      <label htmlFor="avatar-upload" className="btn-upload">
+                        {uploadProgress.avatar ? '⏳ Uploading...' : '📤 Upload Image'}
+                      </label>
+                      {editForm.avatar && (
+                        <div className="image-preview">
+                          <img src={editForm.avatar} alt="Avatar preview" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <small>Max 5MB • JPEG, PNG, GIF, WebP</small>
                 </div>
 
                 <div className="form-group">
-                  <label>Banner URL</label>
-                  <input
-                    type="url"
-                    value={editForm.banner}
-                    onChange={(e) => setEditForm({...editForm, banner: e.target.value})}
-                    placeholder="https://example.com/banner.jpg"
-                  />
-                  <small>Recommended size: 2560x423px</small>
+                  <label>Banner</label>
+                  <div className="upload-section">
+                    <input
+                      type="url"
+                      value={editForm.banner}
+                      onChange={(e) => setEditForm({...editForm, banner: e.target.value})}
+                      placeholder="https://example.com/banner.jpg or upload below"
+                      className="url-input"
+                    />
+                    <div className="upload-or">OR</div>
+                    <div className="file-upload-wrapper">
+                      <input
+                        type="file"
+                        id="banner-upload"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'banner')}
+                        style={{ display: 'none' }}
+                        disabled={uploading}
+                      />
+                      <label htmlFor="banner-upload" className="btn-upload">
+                        {uploadProgress.banner ? '⏳ Uploading...' : '📤 Upload Image'}
+                      </label>
+                      {editForm.banner && (
+                        <div className="image-preview banner-preview">
+                          <img src={editForm.banner} alt="Banner preview" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <small>Recommended size: 2560x423px • Max 5MB</small>
+                </div>
+
+                {/* Badge Selection */}
+                <div className="form-group">
+                  <label>Display Badge</label>
+                  {availableBadges.length > 0 ? (
+                    <>
+                      <small style={{ display: 'block', marginBottom: '10px', color: '#888' }}>
+                        Select a badge to display on your profile and in chat
+                      </small>
+                      <div className="badge-selector-grid">
+                        <div 
+                          className={`badge-selector-item ${selectedBadgeForEdit === null ? 'selected' : ''}`}
+                          onClick={() => setSelectedBadgeForEdit(null)}
+                        >
+                          <div className="badge-selector-none">
+                            <span>No Badge</span>
+                          </div>
+                        </div>
+                        {availableBadges.map((badgeId) => {
+                          const badge = getBadgeById(badgeId);
+                          if (!badge) return null;
+                          return (
+                            <div
+                              key={badgeId}
+                              className={`badge-selector-item ${selectedBadgeForEdit === badgeId ? 'selected' : ''}`}
+                              onClick={() => setSelectedBadgeForEdit(badgeId)}
+                            >
+                              <img 
+                                src={badge.imageUrl} 
+                                alt={badge.name}
+                                className="badge-selector-image"
+                              />
+                              <div className="badge-selector-name">{badge.name}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="no-badges-message">
+                      <p style={{ color: '#888', fontSize: '14px', margin: '10px 0' }}>
+                        No custom badges assigned yet. Contact an admin to get badges!
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-actions">

@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
 import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift } from 'lucide-react';
+import { getBadgeById } from '../config/badges';
 import './StreamView.css';
 
 const StreamView = () => {
@@ -197,6 +198,7 @@ const StreamView = () => {
       userId: user.id,
       userRole: user.role || 'user',
       isPartner: user.isPartner || false,
+      selectedBadge: user.selectedBadge || null,
       chatColor: user.chatColor || '#FFFFFF'
     });
 
@@ -248,8 +250,24 @@ const StreamView = () => {
     }
   };
 
-  const getRoleBadge = (role, isStreamer = false, isPartner = false) => {
+  const getRoleBadge = (role, isStreamer = false, isPartner = false, selectedBadge = null) => {
     const badges = [];
+    
+    // Custom Badge (if user has one selected) - Show FIRST
+    if (selectedBadge) {
+      const customBadge = getBadgeById(selectedBadge);
+      if (customBadge) {
+        badges.push(
+          <span key="custom" className="badge badge-custom" title={customBadge.name}>
+            <img 
+              src={customBadge.imageUrl} 
+              alt={customBadge.name}
+              style={{ width: '16px', height: '16px', display: 'block' }}
+            />
+          </span>
+        );
+      }
+    }
     
     if (isPartner) {
       badges.push(
@@ -454,7 +472,7 @@ const StreamView = () => {
                     >
                       <span className="chat-username" style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}>
                         {msg.username}
-                        {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner)}
+                        {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge)}
                       </span>
                       <span className="chat-text">{msg.message}</span>
                       {canModerate && (

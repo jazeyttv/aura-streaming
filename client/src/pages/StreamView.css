@@ -491,6 +491,20 @@
   gap: 3px;
 }
 
+.badge-custom {
+  background: none !important;
+  border: none;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 2px;
+}
+
+.badge-custom img {
+  display: block;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+
 .badge-partner {
   background: none !important; /* NO BACKGROUND */
   color: #00ffff;

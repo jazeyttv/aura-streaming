@@ -38,6 +38,10 @@ desktop.ini
 # Media files (optional - remove if you want to keep)
 media/
 
+# User uploaded files
+server/uploads/
+uploads/
+
 # Misc
 *.pem
 .cache

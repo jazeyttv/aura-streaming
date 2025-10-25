@@ -16,6 +16,7 @@ const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
 const hlsProxyRoutes = require('./routes/hls-proxy');
+const uploadRoutes = require('./routes/upload');
 
 // Import IP ban middleware
 const { checkIPBan, getClientIP, initBannedIPs } = require('./middleware/ipBanCheck');
@@ -413,12 +414,17 @@ io.on('connection', (socket) => {
 // Make io accessible to routes
 app.set('io', io);
 
+// Static file serving for uploads
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/streams', streamRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/upload', uploadRoutes); // Image upload routes
 app.use('/api/hls-proxy', hlsProxyRoutes); // HLS proxy for HTTPS streaming
 
 // Health check
