@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import { User, Calendar, Edit, Heart, Shield, Crown, CheckCircle, Bell, Settings, Send } from 'lucide-react';
 import { SOCKET_URL } from '../config';
 import { getBadgeById } from '../config/badges';
+import UserCard from '../components/UserCard';
 import './Profile.css';
 
 const Profile = () => {
@@ -38,6 +39,7 @@ const Profile = () => {
   // Bio editing state
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
+  const [selectedUsername, setSelectedUsername] = useState(null);
 
   const isOwnProfile = currentUser?.username === username;
 
@@ -604,8 +606,9 @@ const Profile = () => {
                           {new Date(msg.timestamp).toLocaleTimeString()}
                         </span>
                         <span 
-                          className="profile-chat-username" 
+                          className="profile-chat-username clickable-username" 
                           style={{ color: msg.chatColor || '#00d9ff' }}
+                          onClick={() => setSelectedUsername(msg.username)}
                         >
                           {msg.username}
                           {msg.selectedBadge && (() => {
@@ -836,6 +839,14 @@ const Profile = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* User Card Modal */}
+      {selectedUsername && (
+        <UserCard 
+          username={selectedUsername} 
+          onClose={() => setSelectedUsername(null)} 
+        />
       )}
     </div>
   );

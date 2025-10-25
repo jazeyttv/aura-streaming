@@ -5,6 +5,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
+import UserCard from '../components/UserCard';
 import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
 import './StreamView.css';
@@ -23,6 +24,7 @@ const StreamView = () => {
   const [lastMessageTime, setLastMessageTime] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
+  const [selectedUsername, setSelectedUsername] = useState(null);
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -470,7 +472,11 @@ const StreamView = () => {
                       key={msg.id} 
                       className={`chat-message ${msg.userRole === 'system' ? 'system-message' : ''}`}
                     >
-                      <span className="chat-username" style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}>
+                      <span 
+                        className="chat-username clickable-username" 
+                        style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}
+                        onClick={() => setSelectedUsername(msg.username)}
+                      >
                         {msg.username}
                         {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge)}
                       </span>
@@ -534,6 +540,14 @@ const StreamView = () => {
           </form>
         </div>
       </div>
+
+      {/* User Card Modal */}
+      {selectedUsername && (
+        <UserCard 
+          username={selectedUsername} 
+          onClose={() => setSelectedUsername(null)} 
+        />
+      )}
     </div>
   );
 };
