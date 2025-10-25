@@ -226,16 +226,16 @@ const Dashboard = () => {
                 <div className="credential-item">
                   <label>RTMP Server URL</label>
                   <div className="credential-input-group">
-                    <input 
-                      type="text" 
-                      value={user?.rtmpUrl || 'rtmp://72.23.212.188:1935/live'}
-                      readOnly 
-                    />
-                    <button 
-                      className="btn-icon"
-                      onClick={() => copyToClipboard(user?.rtmpUrl || 'rtmp://72.23.212.188:1935/live', 'url')}
-                      title="Copy URL"
-                    >
+            <input 
+              type="text" 
+              value={'rtmp://72.23.212.188:1935/live'}
+              readOnly 
+            />
+            <button 
+              className="btn-icon"
+              onClick={() => copyToClipboard('rtmp://72.23.212.188:1935/live', 'url')}
+              title="Copy URL"
+            >
                       <Copy size={18} />
                       {copySuccess === 'url' && <span className="copy-tooltip">Copied!</span>}
                     </button>
