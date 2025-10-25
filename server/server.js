@@ -232,6 +232,89 @@ io.on('connection', (socket) => {
   // Handle chat messages with role
   socket.on('chat-message', async ({ streamId, username, message, userId, userRole, isPartner, chatColor, channelName }) => {
     try {
+      // Check for chat commands
+      if (message.startsWith('/')) {
+        const User = require('./models/User');
+        const parts = message.split(' ');
+        const command = parts[0].toLowerCase();
+        const targetUsername = parts[1];
+
+        // Get channel owner
+        const channel = await User.findOne({ username: channelName });
+        if (!channel) {
+          socket.emit('error-message', { message: 'Channel not found' });
+          return;
+        }
+
+        // Check if user is channel owner or admin
+        const isOwner = channel._id.toString() === userId.toString();
+        const isAdmin = userRole === 'admin';
+
+        if (!isOwner && !isAdmin) {
+          socket.emit('error-message', { message: 'Only the channel owner can use this command' });
+          return;
+        }
+
+        // Handle /mod command
+        if (command === '/mod') {
+          if (!targetUsername) {
+            socket.emit('system-message', { message: 'Usage: /mod username' });
+            return;
+          }
+
+          const targetUser = await User.findOne({ username: targetUsername });
+          if (!targetUser) {
+            socket.emit('error-message', { message: `User ${targetUsername} not found` });
+            return;
+          }
+
+          // Add to moderators list
+          if (!channel.moderators.includes(targetUser._id)) {
+            channel.moderators.push(targetUser._id);
+            await channel.save();
+            
+            io.to(streamId).emit('system-message', { 
+              message: `${targetUsername} is now a moderator`,
+              username: 'System'
+            });
+          } else {
+            socket.emit('error-message', { message: `${targetUsername} is already a moderator` });
+          }
+          return;
+        }
+
+        // Handle /unmod command
+        if (command === '/unmod') {
+          if (!targetUsername) {
+            socket.emit('system-message', { message: 'Usage: /unmod username' });
+            return;
+          }
+
+          const targetUser = await User.findOne({ username: targetUsername });
+          if (!targetUser) {
+            socket.emit('error-message', { message: `User ${targetUsername} not found` });
+            return;
+          }
+
+          // Remove from moderators list
+          const index = channel.moderators.indexOf(targetUser._id);
+          if (index > -1) {
+            channel.moderators.splice(index, 1);
+            await channel.save();
+            
+            io.to(streamId).emit('system-message', { 
+              message: `${targetUsername} is no longer a moderator`,
+              username: 'System'
+            });
+          } else {
+            socket.emit('error-message', { message: `${targetUsername} is not a moderator` });
+          }
+          return;
+        }
+
+        // If command not recognized, continue as normal message
+      }
+
       // Check in-memory bans first (backwards compatibility)
       const bannedInStream = global.bannedUsers.get(streamId);
       if (bannedInStream && bannedInStream.has(userId)) {
