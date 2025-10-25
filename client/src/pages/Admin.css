@@ -900,4 +900,43 @@
   text-align: center;
   color: #00d9ff;
   font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.badge-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.badge-actions .btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.badge-actions .btn-primary {
+  background: linear-gradient(135deg, #00d9ff, #7b2cbf);
+  color: #fff;
+}
+
+.badge-actions .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.5);
+}
+
+.badge-actions .btn-secondary {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+.badge-actions .btn-secondary:hover {
+  background: #3a3a3a;
+  color: #fff;
 }

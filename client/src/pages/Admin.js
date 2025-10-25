@@ -30,6 +30,7 @@ const Admin = () => {
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const [selectedUserForBadges, setSelectedUserForBadges] = useState(null);
   const [availableBadges] = useState(getAllBadges());
+  const [tempBadgeSelection, setTempBadgeSelection] = useState([]);
   
   // Dynamically determine RTMP URL from API_URL
   const getRtmpUrl = () => {
@@ -216,41 +217,41 @@ const Admin = () => {
 
   const handleOpenBadgeModal = (user) => {
     setSelectedUserForBadges(user);
+    setTempBadgeSelection(user.customBadges || []); // Initialize temp selection with current badges
     setShowBadgeModal(true);
   };
 
-  const handleToggleBadge = async (badgeId) => {
-    if (!selectedUserForBadges) return;
-
-    const userBadges = selectedUserForBadges.customBadges || [];
-    const hasBadge = userBadges.includes(badgeId);
-    
-    let newBadges;
-    if (hasBadge) {
-      // Remove badge
-      newBadges = userBadges.filter(id => id !== badgeId);
+  const handleToggleBadgeTemp = (badgeId) => {
+    // Toggle badge in temporary selection (not saved yet)
+    if (tempBadgeSelection.includes(badgeId)) {
+      setTempBadgeSelection(tempBadgeSelection.filter(id => id !== badgeId));
     } else {
-      // Add badge
-      newBadges = [...userBadges, badgeId];
+      setTempBadgeSelection([...tempBadgeSelection, badgeId]);
     }
+  };
+
+  const handleSaveBadges = async () => {
+    if (!selectedUserForBadges) return;
 
     try {
       await axios.post(`/api/admin/users/${selectedUserForBadges.id || selectedUserForBadges._id}/badges`, {
-        badgeIds: newBadges
-      });
-      
-      // Update local state
-      setSelectedUserForBadges({
-        ...selectedUserForBadges,
-        customBadges: newBadges
+        badgeIds: tempBadgeSelection
       });
       
       await fetchUsers();
-      console.log(`✨ Badge ${hasBadge ? 'removed' : 'assigned'}: ${badgeId}`);
+      setShowBadgeModal(false);
+      alert(`✨ Badges updated for ${selectedUserForBadges.username}! Assigned ${tempBadgeSelection.length} badge(s).`);
+      console.log(`✨ Badges saved for ${selectedUserForBadges.username}:`, tempBadgeSelection);
     } catch (error) {
-      console.error('Error updating badges:', error);
-      alert('Failed to update badges');
+      console.error('Error saving badges:', error);
+      alert('Failed to save badges. Please try again.');
     }
+  };
+
+  const handleCloseBadgeModal = () => {
+    setShowBadgeModal(false);
+    setTempBadgeSelection([]);
+    setSelectedUserForBadges(null);
   };
 
   const handleToggleStreaming = async (userId, username, currentStatus) => {
@@ -795,14 +796,14 @@ const Admin = () => {
 
       {/* Badge Management Modal */}
       {showBadgeModal && selectedUserForBadges && (
-        <div className="modal-overlay" onClick={() => setShowBadgeModal(false)}>
+        <div className="modal-overlay" onClick={handleCloseBadgeModal}>
           <div className="modal-content badge-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
                 <Award size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
                 Manage Badges: {selectedUserForBadges.username}
               </h2>
-              <button className="btn-close" onClick={() => setShowBadgeModal(false)}>
+              <button className="btn-close" onClick={handleCloseBadgeModal}>
                 ×
               </button>
             </div>
@@ -812,12 +813,12 @@ const Admin = () => {
               </p>
               <div className="badge-grid">
                 {availableBadges.map((badge) => {
-                  const isAssigned = (selectedUserForBadges.customBadges || []).includes(badge.id);
+                  const isAssigned = tempBadgeSelection.includes(badge.id);
                   return (
                     <div
                       key={badge.id}
                       className={`badge-item ${isAssigned ? 'assigned' : ''}`}
-                      onClick={() => handleToggleBadge(badge.id)}
+                      onClick={() => handleToggleBadgeTemp(badge.id)}
                       title={badge.description}
                     >
                       <img
@@ -837,7 +838,15 @@ const Admin = () => {
                 })}
               </div>
               <div className="badge-summary">
-                <strong>Assigned Badges:</strong> {(selectedUserForBadges.customBadges || []).length} / {availableBadges.length}
+                <strong>Selected Badges:</strong> {tempBadgeSelection.length} / {availableBadges.length}
+              </div>
+              <div className="badge-actions">
+                <button className="btn btn-secondary" onClick={handleCloseBadgeModal}>
+                  Cancel
+                </button>
+                <button className="btn btn-primary" onClick={handleSaveBadges}>
+                  Save Changes
+                </button>
               </div>
             </div>
           </div>
