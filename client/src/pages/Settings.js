@@ -258,7 +258,7 @@ const Settings = () => {
                   <label>Avatar</label>
                   <div className="upload-section">
                     <input
-                      type="url"
+                      type="text"
                       value={profileData.avatar}
                       onChange={(e) => setProfileData({ ...profileData, avatar: e.target.value })}
                       placeholder="https://example.com/avatar.jpg or upload below"
@@ -275,7 +275,7 @@ const Settings = () => {
                         disabled={uploading}
                       />
                       <label htmlFor="avatar-upload-settings" className="btn-upload">
-                        {uploadProgress.avatar ? '⏳ Uploading...' : '📤 Upload Image'}
+                        {uploadProgress.avatar ? 'Uploading...' : 'Upload Image'}
                       </label>
                       {profileData.avatar && (
                         <div className="image-preview">
@@ -291,7 +291,7 @@ const Settings = () => {
                   <label>Banner</label>
                   <div className="upload-section">
                     <input
-                      type="url"
+                      type="text"
                       value={profileData.banner}
                       onChange={(e) => setProfileData({ ...profileData, banner: e.target.value })}
                       placeholder="https://example.com/banner.jpg or upload below"
@@ -308,7 +308,7 @@ const Settings = () => {
                         disabled={uploading}
                       />
                       <label htmlFor="banner-upload-settings" className="btn-upload">
-                        {uploadProgress.banner ? '⏳ Uploading...' : '📤 Upload Image'}
+                        {uploadProgress.banner ? 'Uploading...' : 'Upload Image'}
                       </label>
                       {profileData.banner && (
                         <div className="image-preview banner-preview">

@@ -712,7 +712,7 @@ const Profile = () => {
                   <label>Avatar</label>
                   <div className="upload-section">
                     <input
-                      type="url"
+                      type="text"
                       value={editForm.avatar}
                       onChange={(e) => setEditForm({...editForm, avatar: e.target.value})}
                       placeholder="https://example.com/avatar.jpg or upload below"
@@ -729,7 +729,7 @@ const Profile = () => {
                         disabled={uploading}
                       />
                       <label htmlFor="avatar-upload" className="btn-upload">
-                        {uploadProgress.avatar ? '⏳ Uploading...' : '📤 Upload Image'}
+                        {uploadProgress.avatar ? 'Uploading...' : 'Upload Image'}
                       </label>
                       {editForm.avatar && (
                         <div className="image-preview">
@@ -745,7 +745,7 @@ const Profile = () => {
                   <label>Banner</label>
                   <div className="upload-section">
                     <input
-                      type="url"
+                      type="text"
                       value={editForm.banner}
                       onChange={(e) => setEditForm({...editForm, banner: e.target.value})}
                       placeholder="https://example.com/banner.jpg or upload below"
@@ -762,7 +762,7 @@ const Profile = () => {
                         disabled={uploading}
                       />
                       <label htmlFor="banner-upload" className="btn-upload">
-                        {uploadProgress.banner ? '⏳ Uploading...' : '📤 Upload Image'}
+                        {uploadProgress.banner ? 'Uploading...' : 'Upload Image'}
                       </label>
                       {editForm.banner && (
                         <div className="image-preview banner-preview">
