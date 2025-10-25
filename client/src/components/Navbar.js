@@ -55,7 +55,11 @@ const Navbar = () => {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
               >
                 <div className="user-avatar-small">
-                  {user?.username?.[0]?.toUpperCase()}
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.username} />
+                  ) : (
+                    <span>{user?.username?.[0]?.toUpperCase()}</span>
+                  )}
                 </div>
                 <span className="user-name-nav">{user?.username}</span>
                 <ChevronDown size={16} className={`chevron ${userMenuOpen ? 'open' : ''}`} />
