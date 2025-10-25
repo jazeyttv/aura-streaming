@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Key, Bell, Shield, Save, Share2 } from 'lucide-react';
+import { User, Key, Bell, Shield, Save, Share2, Clock } from 'lucide-react';
 import axios from 'axios';
 import { getBadgeById } from '../config/badges';
+import ScheduleEditor from '../components/ScheduleEditor';
 import './Settings.css';
 
 const Settings = () => {
@@ -222,6 +223,14 @@ const Settings = () => {
             >
               <Share2 size={18} />
               <span>Social Media</span>
+            </button>
+            
+            <button
+              className={`settings-nav-item ${activeTab === 'schedule' ? 'active' : ''}`}
+              onClick={() => setActiveTab('schedule')}
+            >
+              <Clock size={18} />
+              <span>Stream Schedule</span>
             </button>
             
             <button
@@ -522,6 +531,12 @@ const Settings = () => {
                   {loading ? 'Saving...' : 'Save changes'}
                 </button>
               </form>
+            </div>
+          )}
+
+          {activeTab === 'schedule' && (
+            <div className="settings-section">
+              <ScheduleEditor username={user.username} />
             </div>
           )}
 
