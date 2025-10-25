@@ -573,6 +573,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Domain verification endpoint (for custom domains)
+// Replace the path and content with your verification values from Render
+app.get('/.well-known/acme-challenge/:token', (req, res) => {
+  // PASTE YOUR VERIFICATION CONTENT HERE
+  const verificationContent = 'dh=b507b84af8537c7c25bfd2940f6c8e1';
+  res.type('text/plain');
+  res.send(verificationContent);
+});
+
 // Get server info
 app.get('/api/server-info', (req, res) => {
   const addresses = getNetworkAddresses();
