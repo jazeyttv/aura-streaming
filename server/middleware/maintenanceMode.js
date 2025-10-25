@@ -1,4 +1,6 @@
 const SystemSettings = require('../models/SystemSettings');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 // In-memory fallback for when MongoDB is not available
 let maintenanceModeMemory = {
@@ -12,14 +14,40 @@ const maintenanceMode = async (req, res, next) => {
     return next();
   }
 
-  // Allow admin login
-  if (req.path === '/api/auth/admin-login' || req.path === '/api/auth/login') {
+  // Allow auth routes (login/register) but ONLY the API endpoints
+  if (req.path === '/api/auth/login' || 
+      req.path === '/api/auth/register' || 
+      req.path === '/api/auth/admin-login') {
     return next();
   }
 
-  // Check if user is admin
-  if (req.user && req.user.role === 'admin') {
+  // Allow maintenance route itself (so admins can toggle it)
+  if (req.path.startsWith('/api/maintenance')) {
     return next();
+  }
+
+  // Check if user is admin by verifying token
+  const token = req.header('x-auth-token');
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+      
+      let user;
+      if (useMemory) {
+        // Check in-memory users (if using memory storage)
+        const users = global.users || [];
+        user = users.find(u => (u.id || u._id).toString() === decoded.userId);
+      } else {
+        user = await User.findById(decoded.userId);
+      }
+      
+      if (user && user.role === 'admin') {
+        return next(); // Admin can access everything
+      }
+    } catch (err) {
+      // Token invalid or expired, continue to maintenance check
+    }
   }
 
   try {

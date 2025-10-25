@@ -120,6 +120,10 @@ app.post('/api/emergency-unban-jazey', express.json(), async (req, res) => {
 // IP Ban Check Middleware - AFTER emergency endpoint
 app.use(checkIPBan);
 
+// Maintenance Mode Middleware
+const maintenanceMode = require('./middleware/maintenanceMode');
+app.use(maintenanceMode);
+
 // Middleware - Dynamic CORS
 app.use(cors({
   origin: (origin, callback) => {
