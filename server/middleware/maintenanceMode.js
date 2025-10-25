@@ -57,13 +57,22 @@ const maintenanceMode = async (req, res, next) => {
     if (useMemory) {
       maintenanceEnabled = maintenanceModeMemory.enabled;
       maintenanceMessage = maintenanceModeMemory.message;
+      console.log('[MAINTENANCE] Checking maintenance (memory):', maintenanceEnabled);
     } else {
-      const settings = await SystemSettings.getSettings();
-      maintenanceEnabled = settings.maintenanceMode.enabled;
-      maintenanceMessage = settings.maintenanceMode.message;
+      try {
+        const settings = await SystemSettings.getSettings();
+        maintenanceEnabled = settings.maintenanceMode.enabled;
+        maintenanceMessage = settings.maintenanceMode.message;
+        console.log('[MAINTENANCE] Checking maintenance (DB):', maintenanceEnabled);
+      } catch (dbError) {
+        console.error('[MAINTENANCE] DB error, using memory fallback:', dbError.message);
+        maintenanceEnabled = maintenanceModeMemory.enabled;
+        maintenanceMessage = maintenanceModeMemory.message;
+      }
     }
 
     if (maintenanceEnabled) {
+      console.log(`[MAINTENANCE] Blocking request to ${req.path} - maintenance active`);
       // For API requests, return JSON
       if (req.path.startsWith('/api/')) {
         return res.status(503).json({
@@ -82,7 +91,8 @@ const maintenanceMode = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Maintenance mode check error:', error);
+    console.error('[MAINTENANCE] Critical error in maintenance check:', error);
+    // On error, default to NOT blocking requests to avoid breaking the site
     next();
   }
 };
