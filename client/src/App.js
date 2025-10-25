@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import ChannelActions from './pages/ChannelActions';
+import TeamPage from './pages/TeamPage';
 import PrivateRoute from './components/PrivateRoute';
 import MaintenancePage from './components/MaintenancePage';
 import './App.css';
@@ -89,6 +90,7 @@ function AppContent() {
             />
             <Route path="/stream/:streamId" element={<StreamView />} />
             <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/team/:teamName" element={<TeamPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
