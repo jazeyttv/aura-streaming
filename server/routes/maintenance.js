@@ -12,7 +12,7 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-// Get maintenance mode status
+// Get maintenance mode status (admin only)
 router.get('/status', authMiddleware, isAdmin, async (req, res) => {
   try {
     const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;

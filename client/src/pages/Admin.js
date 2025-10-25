@@ -112,11 +112,16 @@ const Admin = () => {
     try {
       const response = await axios.get('/api/maintenance/status');
       setMaintenanceMode({
-        enabled: response.data.enabled,
+        enabled: response.data.enabled || false,
         message: response.data.message || '🔧 Website is currently under maintenance. Please check back soon!'
       });
     } catch (error) {
       console.error('Error fetching maintenance status:', error);
+      // Set default values if fetch fails
+      setMaintenanceMode({
+        enabled: false,
+        message: '🔧 Website is currently under maintenance. Please check back soon!'
+      });
     }
   };
 
