@@ -795,7 +795,7 @@ router.post('/users/:userId/ip-ban', authMiddleware, adminMiddleware, async (req
       }
 
       if (user.role === 'admin') {
-        return res.status(403).json({ message: 'Cannot IP ban an admin' });
+        return res.status(403).json({ message: '🚫 CANNOT IP BAN AN ADMIN! This would lock them out of the site!' });
       }
 
       user.isIpBanned = true;
@@ -820,7 +820,7 @@ router.post('/users/:userId/ip-ban', authMiddleware, adminMiddleware, async (req
       }
 
       if (user.role === 'admin') {
-        return res.status(403).json({ message: 'Cannot IP ban an admin' });
+        return res.status(403).json({ message: '🚫 CANNOT IP BAN AN ADMIN! This would lock them out of the site!' });
       }
 
       user.isIpBanned = true;
