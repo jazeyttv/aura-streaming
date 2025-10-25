@@ -234,9 +234,17 @@ const Admin = () => {
     if (!selectedUserForBadges) return;
 
     try {
-      await axios.post(`/api/admin/users/${selectedUserForBadges.id || selectedUserForBadges._id}/badges`, {
+      const response = await axios.post(`/api/admin/users/${selectedUserForBadges.id || selectedUserForBadges._id}/badges`, {
         badgeIds: tempBadgeSelection
       });
+      
+      // Update the selected user with the new badge data from response
+      if (response.data.customBadges !== undefined) {
+        setSelectedUserForBadges({
+          ...selectedUserForBadges,
+          customBadges: response.data.customBadges
+        });
+      }
       
       await fetchUsers();
       setShowBadgeModal(false);

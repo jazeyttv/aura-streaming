@@ -16,7 +16,8 @@ const Settings = () => {
     username: user?.username || '',
     displayName: user?.displayName || user?.username || '',
     bio: user?.bio || '',
-    avatar: user?.avatar || ''
+    avatar: user?.avatar || '',
+    banner: user?.banner || ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -192,6 +193,17 @@ const Settings = () => {
                     placeholder="https://example.com/avatar.jpg"
                   />
                   <small>Enter a URL to your profile picture</small>
+                </div>
+
+                <div className="form-group">
+                  <label>Banner URL</label>
+                  <input
+                    type="url"
+                    value={profileData.banner}
+                    onChange={(e) => setProfileData({ ...profileData, banner: e.target.value })}
+                    placeholder="https://example.com/banner.jpg"
+                  />
+                  <small>Enter a URL to your profile banner (recommended: 1500x250px)</small>
                 </div>
 
                 <button type="submit" className="btn btn-primary" disabled={loading}>

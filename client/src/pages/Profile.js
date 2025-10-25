@@ -318,7 +318,15 @@ const Profile = () => {
             {isOwnProfile && (
               <button 
                 className="btn-channel-action btn-customize"
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setEditForm({
+                    displayName: profile.displayName || profile.username,
+                    bio: profile.bio || '',
+                    avatar: profile.avatar || '',
+                    banner: profile.banner || ''
+                  });
+                  setIsEditing(true);
+                }}
               >
                 <Settings size={18} />
                 Customize channel

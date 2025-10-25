@@ -32,6 +32,8 @@ router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
         isPartner: u.isPartner || false,
         isAffiliate: u.isAffiliate || false,
         isBanned: u.isBanned,
+        customBadges: u.customBadges || [],
+        selectedBadge: u.selectedBadge || null,
         createdAt: u.createdAt
       }));
       console.log('📋 Admin: Returning users (memory):', allUsers.length);
@@ -55,6 +57,8 @@ router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
         isIpBanned: u.isIpBanned || false,
         ipAddress: u.ipAddress || null,
         lastIpAddress: u.lastIpAddress || null,
+        customBadges: u.customBadges || [],
+        selectedBadge: u.selectedBadge || null,
         createdAt: u.createdAt
       }));
 
