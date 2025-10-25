@@ -88,9 +88,6 @@ const StreamView = () => {
     });
 
     return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-      }
       if (socketRef.current) {
         socketRef.current.emit('leave-stream', streamId);
         socketRef.current.disconnect();
