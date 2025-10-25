@@ -75,16 +75,10 @@ const Dashboard = () => {
       }
     });
 
-    socketRef.current.on('viewer-count', ({ streamId, count }) => {
-      console.log('[DASHBOARD] Viewer count update:', { streamId, count });
+    socketRef.current.on('viewer-count', (count) => {
+      console.log('[DASHBOARD] Viewer count update:', count);
       setViewerCount(count);
     });
-
-    // Join the user's stream room for real-time updates
-    if (user && user.username) {
-      socketRef.current.emit('join-stream', user.username);
-      console.log('[DASHBOARD] Joined stream room:', user.username);
-    }
 
     return () => {
       if (socketRef.current) {
@@ -125,33 +119,27 @@ const Dashboard = () => {
 
   const fetchActiveStream = async () => {
     try {
-      const response = await axios.get(`/api/streams/${user.id}`);
-      console.log('[DASHBOARD] Stream data:', response.data);
-      
-      if (response.data && response.data.isLive) {
-        setActiveStream(response.data);
+      const response = await axios.get('/api/streams/user/active');
+      console.log('[DASHBOARD] Fetched active stream:', response.data);
+      if (response.data.stream) {
+        const stream = response.data.stream;
+        setActiveStream(stream);
         setStreamSettings({
-          title: response.data.title || '',
-          description: response.data.description || '',
-          category: response.data.category || 'Just Chatting'
+          title: stream.title || '',
+          description: stream.description || '',
+          category: stream.category || 'Just Chatting'
         });
-        setViewerCount(response.data.viewerCount || 0);
-        if (response.data.startedAt) {
-          setStreamStartTime(new Date(response.data.startedAt));
+        setViewerCount(stream.viewerCount || 0);
+        if (stream.startedAt) {
+          setStreamStartTime(new Date(stream.startedAt));
         }
       } else {
-        // Stream exists but not live
-        setActiveStream(null);
-        setViewerCount(0);
-        setStreamStartTime(null);
-      }
-    } catch (error) {
-      // 404 means no stream exists yet - this is normal when offline
-      if (error.response && error.response.status === 404) {
-        console.log('[DASHBOARD] No active stream found (offline)');
-        setActiveStream(null);
-        setViewerCount(0);
-        setStreamStartTime(null);
+        // No active stream
+        if (activeStream) {
+          setActiveStream(null);
+          setViewerCount(0);
+          setStreamStartTime(null);
+        }
         
         // Load saved settings from localStorage
         const savedSettings = localStorage.getItem('streamSettings');
@@ -162,11 +150,9 @@ const Dashboard = () => {
             console.error('Failed to parse saved settings:', e);
           }
         }
-      } else {
-        console.error('Error fetching stream:', error);
-        setActiveStream(null);
-        setViewerCount(0);
       }
+    } catch (error) {
+      console.error('Error fetching active stream:', error);
     }
   };
 
