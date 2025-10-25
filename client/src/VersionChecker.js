@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '\';
 const VERSION_KEY = 'aura_app_version';
 const LAST_CHECK_KEY = 'aura_last_check';
 
