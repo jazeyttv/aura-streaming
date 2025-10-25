@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import io from 'socket.io-client';
-import Hls from 'hls.js';
 import config from '../config';
+import HLSPlayer from '../components/HLSPlayer';
 import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift } from 'lucide-react';
 import './StreamView.css';
 
@@ -25,8 +25,6 @@ const StreamView = () => {
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
-  const videoRef = useRef(null);
-  const hlsRef = useRef(null);
 
   const isModerator = user && (user.role === 'moderator' || user.role === 'admin');
   const isAdmin = user && user.role === 'admin';
@@ -110,39 +108,6 @@ const StreamView = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
-
-  useEffect(() => {
-    if (stream?.streamUrl && videoRef.current) {
-      const videoUrl = stream.streamUrl.replace('localhost', window.location.hostname);
-      
-      // For HLS streaming
-      if (Hls.isSupported()) {
-        hlsRef.current = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 90
-        });
-        hlsRef.current.loadSource(videoUrl);
-        hlsRef.current.attachMedia(videoRef.current);
-        
-        hlsRef.current.on(Hls.Events.MANIFEST_PARSED, () => {
-          videoRef.current.play().catch(err => console.log('Autoplay prevented:', err));
-        });
-        
-        hlsRef.current.on(Hls.Events.ERROR, (event, data) => {
-          console.error('HLS Error:', data);
-        });
-      } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-        videoRef.current.src = videoUrl;
-      }
-    }
-    
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-      }
-    };
-  }, [stream]);
 
   const fetchStream = async () => {
     try {
@@ -345,12 +310,8 @@ const StreamView = () => {
       <div className="stream-layout">
         <div className="stream-main">
           <div className="video-container">
-            <video 
-              ref={videoRef}
-              controls
-              autoPlay
-              muted={false}
-              playsInline 
+            <HLSPlayer 
+              streamUrl={stream?.streamUrl}
               className="stream-video"
             />
             <div className="video-overlay">
