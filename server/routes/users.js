@@ -670,4 +670,56 @@ router.post('/api/badges/select', authMiddleware, async (req, res) => {
   }
 });
 
+// Admin: Change username
+router.put('/admin/change-username/:userId', authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { newUsername } = req.body;
+
+    // Check if requester is admin
+    const requestingUser = await User.findById(req.userId);
+    if (!requestingUser || requestingUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can change usernames' });
+    }
+
+    // Validate new username
+    if (!newUsername || newUsername.length < 3 || newUsername.length > 20) {
+      return res.status(400).json({ message: 'Username must be between 3 and 20 characters' });
+    }
+
+    // Check if username is alphanumeric
+    if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+      return res.status(400).json({ message: 'Username can only contain letters, numbers, and underscores' });
+    }
+
+    // Check if username already exists
+    const existingUser = await User.findOne({ username: newUsername });
+    if (existingUser && existingUser._id.toString() !== userId) {
+      return res.status(400).json({ message: 'Username already taken' });
+    }
+
+    // Update username
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const oldUsername = user.username;
+    user.username = newUsername;
+    await user.save();
+
+    console.log(`Admin ${requestingUser.username} changed username from ${oldUsername} to ${newUsername}`);
+
+    res.json({
+      success: true,
+      message: `Username changed from ${oldUsername} to ${newUsername}`,
+      oldUsername,
+      newUsername
+    });
+  } catch (error) {
+    console.error('Change username error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

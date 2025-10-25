@@ -440,6 +440,16 @@
   box-shadow: 0 0 10px rgba(179, 0, 255, 0.4);
 }
 
+.btn-action.username {
+  background-color: #2a2a2a;
+  color: #00d9ff;
+}
+
+.btn-action.username:hover {
+  background-color: #00d9ff;
+  color: #000;
+}
+
 .btn-action.ban {
   background-color: #ff4444;
 }

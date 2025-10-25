@@ -214,10 +214,41 @@ const Admin = () => {
     try {
       await axios.put(`/api/admin/users/${userId}/role`, { role: newRole });
       await fetchUsers();
-      alert(`✅ ${username} is now a ${newRole}!`);
+      alert(`${username} is now a ${newRole}!`);
     } catch (error) {
       console.error('Error changing role:', error);
       alert('Failed to change role');
+    }
+  };
+
+  const handleChangeUsername = async (userId, currentUsername) => {
+    const newUsername = prompt(`Change username for ${currentUsername}\n\nNew username (3-20 characters, letters/numbers/_):`);
+    
+    if (!newUsername) return;
+    if (newUsername === currentUsername) {
+      alert('New username is the same as current username');
+      return;
+    }
+
+    if (newUsername.length < 3 || newUsername.length > 20) {
+      alert('Username must be between 3 and 20 characters');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+      alert('Username can only contain letters, numbers, and underscores');
+      return;
+    }
+
+    if (!window.confirm(`Change username from "${currentUsername}" to "${newUsername}"?\n\nThis will affect all references to this user.`)) return;
+
+    try {
+      const response = await axios.put(`/api/users/admin/change-username/${userId}`, { newUsername });
+      await fetchUsers();
+      alert(response.data.message || 'Username changed successfully!');
+    } catch (error) {
+      console.error('Error changing username:', error);
+      alert(error.response?.data?.message || 'Failed to change username');
     }
   };
 
@@ -646,6 +677,15 @@ const Admin = () => {
                           title="Manage Custom Badges"
                         >
                           <Award size={14} />
+                        </button>
+
+                        {/* Change Username */}
+                        <button
+                          className="btn-action username"
+                          onClick={() => handleChangeUsername(u.id || u._id, u.username)}
+                          title="Change Username"
+                        >
+                          <Key size={14} />
                         </button>
 
                         {/* Chat Ban */}
