@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw, Trash2, MessageCircle, X, Search, Info } from 'lucide-react';
+import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw, Trash2, MessageCircle, X, Search, Info, Award } from 'lucide-react';
 import { API_URL } from '../config';
+import { getAllBadges } from '../config/badges';
 import './Admin.css';
 
 const Admin = () => {
@@ -26,6 +27,9 @@ const Admin = () => {
   const [selectedKey, setSelectedKey] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [selectedUserForBadges, setSelectedUserForBadges] = useState(null);
+  const [availableBadges] = useState(getAllBadges());
   
   // Dynamically determine RTMP URL from API_URL
   const getRtmpUrl = () => {
@@ -207,6 +211,45 @@ const Admin = () => {
     } catch (error) {
       console.error('Error toggling affiliate:', error);
       alert('Failed to update affiliate status');
+    }
+  };
+
+  const handleOpenBadgeModal = (user) => {
+    setSelectedUserForBadges(user);
+    setShowBadgeModal(true);
+  };
+
+  const handleToggleBadge = async (badgeId) => {
+    if (!selectedUserForBadges) return;
+
+    const userBadges = selectedUserForBadges.customBadges || [];
+    const hasBadge = userBadges.includes(badgeId);
+    
+    let newBadges;
+    if (hasBadge) {
+      // Remove badge
+      newBadges = userBadges.filter(id => id !== badgeId);
+    } else {
+      // Add badge
+      newBadges = [...userBadges, badgeId];
+    }
+
+    try {
+      await axios.post(`/api/admin/users/${selectedUserForBadges.id || selectedUserForBadges._id}/badges`, {
+        badgeIds: newBadges
+      });
+      
+      // Update local state
+      setSelectedUserForBadges({
+        ...selectedUserForBadges,
+        customBadges: newBadges
+      });
+      
+      await fetchUsers();
+      console.log(`✨ Badge ${hasBadge ? 'removed' : 'assigned'}: ${badgeId}`);
+    } catch (error) {
+      console.error('Error updating badges:', error);
+      alert('Failed to update badges');
     }
   };
 
@@ -529,6 +572,15 @@ const Admin = () => {
                           A
                         </button>
 
+                        {/* Custom Badges */}
+                        <button
+                          className={`btn-action badges ${(u.customBadges && u.customBadges.length > 0) ? 'active' : ''}`}
+                          onClick={() => handleOpenBadgeModal(u)}
+                          title="Manage Custom Badges"
+                        >
+                          <Award size={14} />
+                        </button>
+
                         {/* Chat Ban */}
                         {!u.isChatBanned && u.role !== 'admin' && (
                           <button
@@ -735,6 +787,57 @@ const Admin = () => {
                   <strong>Joined:</strong>
                   <span>{new Date(selectedUser.createdAt).toLocaleString()}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Badge Management Modal */}
+      {showBadgeModal && selectedUserForBadges && (
+        <div className="modal-overlay" onClick={() => setShowBadgeModal(false)}>
+          <div className="modal-content badge-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Award size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                Manage Badges: {selectedUserForBadges.username}
+              </h2>
+              <button className="btn-close" onClick={() => setShowBadgeModal(false)}>
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ marginBottom: '20px', color: '#aaa' }}>
+                Click badges to assign/remove them. User can select ONE badge to display at a time.
+              </p>
+              <div className="badge-grid">
+                {availableBadges.map((badge) => {
+                  const isAssigned = (selectedUserForBadges.customBadges || []).includes(badge.id);
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`badge-item ${isAssigned ? 'assigned' : ''}`}
+                      onClick={() => handleToggleBadge(badge.id)}
+                      title={badge.description}
+                    >
+                      <img
+                        src={badge.imageUrl}
+                        alt={badge.name}
+                        className="badge-image"
+                      />
+                      <div className="badge-info">
+                        <div className="badge-name">{badge.name}</div>
+                        <div className="badge-desc">{badge.description}</div>
+                      </div>
+                      {isAssigned && (
+                        <div className="badge-check">✓</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="badge-summary">
+                <strong>Assigned Badges:</strong> {(selectedUserForBadges.customBadges || []).length} / {availableBadges.length}
               </div>
             </div>
           </div>

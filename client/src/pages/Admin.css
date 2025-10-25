@@ -369,6 +369,22 @@
   box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);
 }
 
+.btn-action.badges {
+  background-color: #2a2a2a;
+  color: #B300FF;
+}
+
+.btn-action.badges:hover {
+  background-color: #3a3a3a;
+  color: #d966ff;
+}
+
+.btn-action.badges.active {
+  background: linear-gradient(135deg, #B300FF, #7b2cbf);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(179, 0, 255, 0.4);
+}
+
 .btn-action.ban {
   background-color: #ff4444;
 }
@@ -795,4 +811,93 @@
 .btn-action.ip-unban:hover {
   background: #00cc00;
   transform: scale(1.1);
+}
+
+/* Badge Management Modal */
+.badge-modal .modal-content {
+  max-width: 700px;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.badge-item {
+  background: #1a1a1a;
+  border: 2px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge-item:hover {
+  border-color: #B300FF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(179, 0, 255, 0.3);
+}
+
+.badge-item.assigned {
+  border-color: #00d9ff;
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.badge-item.assigned:hover {
+  border-color: #00ffff;
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.5);
+}
+
+.badge-image {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.badge-info {
+  flex: 1;
+}
+
+.badge-name {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.badge-desc {
+  font-size: 12px;
+  color: #999;
+}
+
+.badge-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: #00d9ff;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.badge-summary {
+  padding: 16px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid #00d9ff;
+  border-radius: 8px;
+  text-align: center;
+  color: #00d9ff;
+  font-size: 14px;
 }
