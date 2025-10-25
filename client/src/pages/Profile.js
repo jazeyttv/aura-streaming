@@ -8,6 +8,7 @@ import { SOCKET_URL } from '../config';
 import { getBadgeById } from '../config/badges';
 import UserCard from '../components/UserCard';
 import ScheduleDisplay from '../components/ScheduleDisplay';
+import PanelsDisplay from '../components/PanelsDisplay';
 import './Profile.css';
 
 const Profile = () => {
@@ -502,6 +503,8 @@ const Profile = () => {
         {activeTab === 'about' && (
           <div className="channel-tab-content">
             <div className="channel-section">
+              <PanelsDisplay username={username} />
+              
               <div className="about-header">
                 <h2>About</h2>
                 {isOwnProfile && !isEditingBio && (
