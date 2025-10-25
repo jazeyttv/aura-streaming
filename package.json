@@ -1,0 +1,18 @@
+{
+  "name": "aura-streaming",
+  "version": "1.0.0",
+  "description": "AURA - Modern live streaming platform with neon aesthetics",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && node server.js",
+    "client": "cd client && npm start",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["streaming", "live", "video"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
+

@@ -1,0 +1,138 @@
+/* Stream Card - Kick Style */
+.stream-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.stream-card:hover {
+  transform: translateY(-4px);
+}
+
+.stream-card:hover .stream-thumbnail-wrapper {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.stream-thumbnail-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+  background: #18181b;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s;
+}
+
+.stream-thumbnail-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1f 0%, #26262c 100%);
+}
+
+.thumbnail-icon {
+  color: #3a3a3f;
+  width: 64px;
+  height: 64px;
+}
+
+.stream-live-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #eb0400;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.stream-viewers-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stream-card-info {
+  display: flex;
+  gap: 12px;
+}
+
+.stream-card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00d9ff, #7b2cbf);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.stream-card-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.stream-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #efeff1;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stream-card-streamer {
+  font-size: 13px;
+  color: #adadb8;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stream-card-category {
+  font-size: 12px;
+  color: #adadb8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

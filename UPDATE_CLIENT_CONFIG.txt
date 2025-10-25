@@ -1,0 +1,17 @@
+UPDATE CLIENT CONFIGURATION
+===========================
+
+Create or update: client\.env
+
+Add these lines:
+----------------------------
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_SOCKET_URL=http://localhost:5000
+REACT_APP_MEDIA_URL=http://localhost:8888
+
+===========================
+
+IMPORTANT: HLS port changed from 8000 to 8888!
+
+After updating, restart the frontend.
+

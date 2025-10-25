@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AURA Debug Info</title>
+    <style>
+        body {
+            background: #0E0E12;
+            color: #00FFFF;
+            font-family: monospace;
+            padding: 20px;
+            font-size: 16px;
+        }
+        .debug-box {
+            background: #1A1A1D;
+            border: 2px solid #00FFFF;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .label {
+            color: #FFFFFF;
+            font-weight: bold;
+        }
+        .value {
+            color: #00FFFF;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        button {
+            background: #00FFFF;
+            color: #0E0E12;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 AURA Connection Debug v2.0</h1>
+    
+    <div class="debug-box">
+        <div class="label">App Version:</div>
+        <div class="value" style="color: #00FF00;">v2.0.0 - Chat Sync Fixed</div>
+    </div>
+
+    <div class="debug-box">
+        <div class="label">Your Current URL:</div>
+        <div class="value" id="currentUrl"></div>
+    </div>
+
+    <div class="debug-box">
+        <div class="label">Backend Should Connect To:</div>
+        <div class="value" id="backendUrl"></div>
+    </div>
+
+    <div class="debug-box">
+        <div class="label">Socket URL:</div>
+        <div class="value" id="socketUrl"></div>
+    </div>
+
+    <div class="debug-box">
+        <div class="label">Media URL:</div>
+        <div class="value" id="mediaUrl"></div>
+    </div>
+
+    <div class="debug-box">
+        <div class="label">Instructions:</div>
+        <div class="value" style="color: #FFFFFF; font-size: 14px;">
+            ✅ If Backend URL shows: <span style="color: #00FFFF;">http://10.8.0.250:5000</span><br>
+            → You're connecting correctly!<br><br>
+            
+            ❌ If Backend URL shows: <span style="color: #FF0000;">http://localhost:5000</span><br>
+            → Clear browser cache and reload!
+        </div>
+    </div>
+
+    <button onclick="location.reload(true)">Force Reload (Clear Cache)</button>
+    <button onclick="location.href='/'">Go to Home Page</button>
+
+    <script>
+        // Display debug info
+        const hostname = window.location.hostname;
+        const backendUrl = `http://${hostname}:5000`;
+        const mediaUrl = `http://${hostname}:8888`;
+
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('backendUrl').textContent = backendUrl;
+        document.getElementById('socketUrl').textContent = backendUrl;
+        document.getElementById('mediaUrl').textContent = mediaUrl;
+
+        // Test backend connection
+        fetch(backendUrl + '/api/streams/live')
+            .then(response => {
+                console.log('✅ Backend connection successful!', response);
+                alert('✅ Backend connected successfully!');
+            })
+            .catch(error => {
+                console.error('❌ Backend connection failed:', error);
+                alert('❌ Backend connection FAILED! Check if server is running on ' + backendUrl);
+            });
+    </script>
+</body>
+</html>
+

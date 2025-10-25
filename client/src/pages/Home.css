@@ -1,0 +1,252 @@
+/* Home Layout - Kick Style */
+.home-layout {
+  display: flex;
+  min-height: calc(100vh - 70px);
+  background: #0f0f0f;
+}
+
+/* Live Sidebar - Kick Style */
+.live-sidebar {
+  width: 240px;
+  background: #18181b;
+  border-right: 1px solid #26262c;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  z-index: 10;
+}
+
+/* Sidebar Tabs */
+.sidebar-tabs {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  gap: 4px;
+  border-bottom: 1px solid #26262c;
+}
+
+.sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #adadb8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.sidebar-tab:hover {
+  background: #26262c;
+  color: #efeff1;
+}
+
+.sidebar-tab.active {
+  background: rgba(0, 217, 255, 0.1);
+  color: #00d9ff;
+}
+
+.sidebar-tab svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-streamers {
+  padding: 0;
+}
+
+.sidebar-streamer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-left: 2px solid transparent;
+}
+
+.sidebar-streamer:hover {
+  background: #26262c;
+  border-left-color: #00d9ff;
+}
+
+.streamer-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00d9ff, #7b2cbf);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  object-fit: cover;
+}
+
+.live-pulse {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #00d9ff;
+  border: 2px solid #18181b;
+  border-radius: 50%;
+}
+
+.streamer-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.streamer-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #efeff1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.streamer-game {
+  font-size: 11px;
+  color: #adadb8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewer-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #adadb8;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.red-dot {
+  width: 6px;
+  height: 6px;
+  background: #eb0400;
+  border-radius: 50%;
+}
+
+.no-streamers {
+  padding: 40px 20px;
+  text-align: center;
+  color: #adadb8;
+  font-size: 12px;
+}
+
+/* Main Content Area */
+.home-main {
+  margin-left: 240px;
+  padding: 24px 32px;
+  width: calc(100% - 240px);
+  background: #0f0f0f;
+}
+
+.streams-header {
+  margin-bottom: 24px;
+}
+
+.streams-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #efeff1;
+}
+
+/* Streams Grid - Kick Style */
+.streams-grid-kick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+/* No Streams State */
+.no-streams-modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  color: #00d9ff;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-streams-modern h3 {
+  font-size: 20px;
+  color: #efeff1;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.no-streams-modern p {
+  font-size: 14px;
+  color: #adadb8;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .streams-grid-kick {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .live-sidebar {
+    display: none;
+  }
+  
+  .home-main {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px;
+  }
+  
+  .streams-grid-kick {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Custom Scrollbar for Sidebar */
+.live-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.live-sidebar::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+.live-sidebar::-webkit-scrollbar-thumb {
+  background: #26262c;
+  border-radius: 4px;
+}
+
+.live-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3f;
+}

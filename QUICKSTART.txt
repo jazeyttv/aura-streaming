@@ -1,0 +1,75 @@
+========================================
+   KICKY STREAMING PLATFORM
+   Quick Start Guide
+========================================
+
+EASIEST WAY TO START:
+---------------------
+1. Double-click "START.bat"
+2. Wait for installation (first time only)
+3. Browser opens automatically at http://localhost:3000
+4. Done!
+
+MANUAL START:
+-------------
+1. Open PowerShell in this folder
+2. Run: npm run dev
+3. Go to http://localhost:3000
+
+FIRST TIME SETUP:
+-----------------
+If START.bat doesn't work, run these commands in PowerShell:
+
+npm install
+cd server
+npm install
+cd ../client
+npm install
+cd ..
+npm run dev
+
+CREATE YOUR ACCOUNT:
+--------------------
+1. Click "Sign Up" button
+2. Choose a username and password
+3. Check "I want to be a streamer" if you want to stream
+4. Click Sign Up
+
+START STREAMING:
+----------------
+1. Login to your account
+2. Click "Dashboard" in navigation
+3. Enter stream title and details
+4. Click "Go Live"
+5. Allow camera/microphone access
+6. You're live!
+
+VIEW STREAMS:
+-------------
+1. Go to homepage (http://localhost:3000)
+2. Click any stream card
+3. Watch and chat!
+
+IMPORTANT URLS:
+---------------
+Homepage: http://localhost:3000
+Dashboard: http://localhost:3000/dashboard
+Backend: http://localhost:5000
+
+STOPPING THE APP:
+-----------------
+Press Ctrl+C in the terminal/PowerShell window
+
+TROUBLESHOOTING:
+----------------
+- If port error: Close other apps using port 3000 or 5000
+- If camera doesn't work: Allow browser permissions
+- If dependencies missing: Run npm install in each folder
+
+For detailed help, see:
+- README.md (full documentation)
+- INSTALL.md (installation guide)
+- SETUP_GUIDE.md (detailed usage)
+
+========================================
+

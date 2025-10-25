@@ -1,0 +1,66 @@
+═══════════════════════════════════════════
+  AURA DEPLOYMENT - JAZEYTTV
+  Save Your URLs Here!
+═══════════════════════════════════════════
+
+📦 GITHUB
+─────────────────────────────────────────
+Repo URL: https://github.com/jazeyttv/aura-streaming
+Status: [ ] Created [ ] Pushed
+
+
+🗄️ MONGODB ATLAS
+─────────────────────────────────────────
+Dashboard: https://cloud.mongodb.com
+
+Database Password: _________________________
+
+Connection String:
+mongodb+srv://aura_admin:PASSWORD@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+
+(Replace PASSWORD with your actual password!)
+
+Status: [ ] Account Created [ ] Cluster Created [ ] User Created [ ] IP Whitelisted
+
+
+🖥️ RENDER.COM - BACKEND
+─────────────────────────────────────────
+Dashboard: https://dashboard.render.com
+Service Name: aura-backend
+
+Backend URL: https://aura-backend-________.onrender.com
+
+Status: [ ] Service Created [ ] Environment Variables Added [ ] Deployed
+
+
+🎨 RENDER.COM - FRONTEND
+─────────────────────────────────────────
+Service Name: aura-frontend
+
+Frontend URL: https://aura-frontend-________.onrender.com
+
+Status: [ ] Service Created [ ] Environment Variables Added [ ] Deployed
+
+
+✅ FINAL CHECKLIST
+─────────────────────────────────────────
+[ ] Code pushed to GitHub
+[ ] MongoDB database created
+[ ] Backend deployed and running
+[ ] Frontend deployed and running
+[ ] Site tested and working
+
+🎉 YOUR LIVE SITE
+─────────────────────────────────────────
+
+Share this with everyone:
+
+https://aura-frontend-________.onrender.com
+
+(Fill in the URL after frontend deploys!)
+
+
+═══════════════════════════════════════════
+  Print this page and check off as you go!
+═══════════════════════════════════════════
+
