@@ -624,11 +624,12 @@ const Profile = () => {
                             ) : null;
                           })()}
                           {msg.isPartner && (
-                            <CheckCircle 
-                              size={12} 
-                              fill="#00ffff" 
-                              style={{ marginLeft: '4px', verticalAlign: 'middle' }} 
-                            />
+                            <span className="partner-badge-chat" title="Partner">
+                              <CheckCircle 
+                                size={16} 
+                                fill="#00d9ff" 
+                              />
+                            </span>
                           )}
                           {msg.userRole === 'admin' && (
                             <svg

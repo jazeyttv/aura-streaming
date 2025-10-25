@@ -274,7 +274,7 @@ const StreamView = () => {
     if (isPartner) {
       badges.push(
         <span key="partner" className="badge badge-partner" title="Verified Partner">
-          <CheckCircle size={14} fill="currentColor" />
+          <CheckCircle size={16} fill="currentColor" />
         </span>
       );
     }

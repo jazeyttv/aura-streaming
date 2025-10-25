@@ -763,6 +763,32 @@
   transform: translateY(-1px);
 }
 
+.partner-badge-chat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 2px;
+  background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
+  animation: partner-glow 2s ease-in-out infinite;
+}
+
+.partner-badge-chat svg {
+  display: block;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+}
+
+@keyframes partner-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.8), 0 0 20px rgba(0, 217, 255, 0.4);
+  }
+}
+
 .profile-chat-text {
   color: #ddd;
   font-size: 14px;
