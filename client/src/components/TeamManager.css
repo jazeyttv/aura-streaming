@@ -1,0 +1,494 @@
+.team-manager {
+  padding: 20px;
+}
+
+.team-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.team-message.success {
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid #00d9ff;
+  color: #00d9ff;
+}
+
+.team-message.error {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  color: #ff4444;
+}
+
+.partner-required {
+  text-align: center;
+  padding: 60px 20px;
+  color: #888;
+}
+
+.partner-required svg {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.partner-required h3 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.no-team {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.no-team svg {
+  color: #00d9ff;
+  margin-bottom: 16px;
+}
+
+.no-team h3 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.no-team p {
+  color: #888;
+  margin-bottom: 24px;
+}
+
+.btn-create-team {
+  padding: 12px 24px;
+  background: #00d9ff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-create-team:hover {
+  background: #00b8d9;
+  transform: translateY(-2px);
+}
+
+.team-form {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.form-header h3 {
+  font-size: 20px;
+  color: #fff;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.btn-close:hover {
+  color: #fff;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #00d9ff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  color: #888;
+  font-size: 12px;
+}
+
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-or {
+  text-align: center;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-upload {
+  padding: 10px 16px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid #00d9ff;
+  color: #00d9ff;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.btn-upload:hover {
+  background: rgba(0, 217, 255, 0.2);
+}
+
+.image-preview-small {
+  margin-top: 8px;
+  max-width: 200px;
+}
+
+.image-preview-small img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #00d9ff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #00b8d9;
+  transform: translateY(-2px);
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.team-details {
+  max-width: 800px;
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  color: #fff;
+}
+
+.btn-view-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid #00d9ff;
+  color: #00d9ff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-view-team:hover {
+  background: rgba(0, 217, 255, 0.2);
+}
+
+.team-members-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-members-section h4 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #fff;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.member-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.owner-icon {
+  color: #ffd700;
+}
+
+.partner-badge-small {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0, 217, 255, 0.2);
+  border: 1px solid #00d9ff;
+  color: #00d9ff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.btn-remove {
+  padding: 6px 12px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.btn-remove:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.btn-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.team-invites-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-invites-section h4 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #fff;
+}
+
+.invite-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.invite-form input {
+  flex: 1;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+}
+
+.invite-form input:focus {
+  outline: none;
+  border-color: #00d9ff;
+}
+
+.invite-form button {
+  padding: 10px 16px;
+  background: #00d9ff;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.invite-form button:hover:not(:disabled) {
+  background: #00b8d9;
+}
+
+.invite-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pending-invites {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.pending-invites h5 {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.invite-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.invite-item:last-child {
+  border-bottom: none;
+}
+
+.invite-item span {
+  color: #fff;
+  font-weight: 500;
+}
+
+.btn-cancel {
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid #666;
+  color: #888;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.danger-zone {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 2px solid rgba(255, 68, 68, 0.3);
+}
+
+.danger-zone h4 {
+  font-size: 18px;
+  color: #ff4444;
+  margin-bottom: 12px;
+}
+
+.btn-delete {
+  padding: 10px 16px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.danger-zone small {
+  display: block;
+  margin-top: 8px;
+  color: #888;
+  font-size: 12px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}
+

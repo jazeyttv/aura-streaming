@@ -19,6 +19,25 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get current user's team
+router.get('/my-team', auth, async (req, res) => {
+  try {
+    const team = await Team.findOne({ owner: req.userId })
+      .populate('owner', 'username displayName avatar isPartner')
+      .populate('members', 'username displayName avatar isPartner')
+      .populate('pendingInvites.userId', 'username avatar');
+    
+    if (!team) {
+      return res.status(404).json({ error: 'No team found' });
+    }
+    
+    res.json({ team });
+  } catch (error) {
+    console.error('Get my team error:', error);
+    res.status(500).json({ error: 'Failed to fetch team' });
+  }
+});
+
 // Get team by name
 router.get('/:teamName', async (req, res) => {
   try {
@@ -276,7 +295,86 @@ router.post('/:teamName/decline', auth, async (req, res) => {
   }
 });
 
-// Remove member from team
+// Cancel pending invite (owner only)
+router.post('/:teamName/cancel-invite', auth, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    const team = await Team.findOne({ name: req.params.teamName });
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    
+    // Check if user is owner
+    if (team.owner.toString() !== req.userId) {
+      return res.status(403).json({ error: 'Only the team owner can cancel invitations' });
+    }
+    
+    // Find and remove invite
+    const inviteIndex = team.pendingInvites.findIndex(
+      inv => inv.userId.toString() === userId
+    );
+    
+    if (inviteIndex === -1) {
+      return res.status(404).json({ error: 'Invite not found' });
+    }
+    
+    team.pendingInvites.splice(inviteIndex, 1);
+    await team.save();
+    
+    res.json({
+      success: true,
+      message: 'Invitation cancelled'
+    });
+  } catch (error) {
+    console.error('Cancel invite error:', error);
+    res.status(500).json({ error: 'Failed to cancel invitation' });
+  }
+});
+
+// Remove member from team (owner only)
+router.post('/:teamName/remove-member', auth, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    const team = await Team.findOne({ name: req.params.teamName });
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    
+    // Check if user is owner
+    if (team.owner.toString() !== req.userId) {
+      return res.status(403).json({ error: 'Only the team owner can remove members' });
+    }
+    
+    // Can't remove owner
+    if (userId === team.owner.toString()) {
+      return res.status(400).json({ error: 'Cannot remove the team owner' });
+    }
+    
+    // Check if user is a member
+    if (!team.members.some(memberId => memberId.toString() === userId)) {
+      return res.status(400).json({ error: 'User is not a member of this team' });
+    }
+    
+    // Remove from members
+    team.members = team.members.filter(
+      memberId => memberId.toString() !== userId
+    );
+    
+    await team.save();
+    
+    res.json({
+      success: true,
+      message: 'Member removed from team'
+    });
+  } catch (error) {
+    console.error('Remove member error:', error);
+    res.status(500).json({ error: 'Failed to remove member' });
+  }
+});
+
+// Remove member from team (DELETE method for backwards compatibility)
 router.delete('/:teamName/members/:username', auth, async (req, res) => {
   try {
     const team = await Team.findOne({ name: req.params.teamName });

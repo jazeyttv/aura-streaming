@@ -1,0 +1,176 @@
+.team-invites-container {
+  padding: 20px;
+}
+
+.invites-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.loading-invites {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}
+
+.no-invites {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.no-invites svg {
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.no-invites p {
+  font-size: 16px;
+  color: #888;
+}
+
+.invites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.invite-card:hover {
+  border-color: rgba(0, 217, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.invite-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.team-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.team-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-logo svg {
+  color: #00d9ff;
+}
+
+.invite-details {
+  flex: 1;
+}
+
+.invite-details h4 {
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.invite-owner {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.invite-owner strong {
+  color: #00d9ff;
+  font-weight: 600;
+}
+
+.invite-description {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0;
+  max-width: 400px;
+}
+
+.invite-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-accept,
+.btn-decline {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.btn-accept {
+  background: #00d9ff;
+  color: #000;
+}
+
+.btn-accept:hover:not(:disabled) {
+  background: #00b8d9;
+  transform: translateY(-2px);
+}
+
+.btn-decline {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  color: #ff4444;
+}
+
+.btn-decline:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.btn-accept:disabled,
+.btn-decline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .invite-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .invite-actions {
+    width: 100%;
+  }
+
+  .btn-accept,
+  .btn-decline {
+    flex: 1;
+  }
+}
+

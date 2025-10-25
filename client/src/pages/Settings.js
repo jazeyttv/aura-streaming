@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Key, Bell, Shield, Save, Share2, Clock, Layout } from 'lucide-react';
+import { User, Key, Bell, Shield, Save, Share2, Clock, Layout, Users } from 'lucide-react';
 import axios from 'axios';
 import { getBadgeById } from '../config/badges';
 import ScheduleEditor from '../components/ScheduleEditor';
 import PanelsEditor from '../components/PanelsEditor';
+import TeamManager from '../components/TeamManager';
+import TeamInvites from '../components/TeamInvites';
 import './Settings.css';
 
 const Settings = () => {
@@ -257,6 +259,16 @@ const Settings = () => {
               <Shield size={18} />
               <span>Privacy</span>
             </button>
+
+            {user?.isPartner && (
+              <button
+                className={`settings-nav-item ${activeTab === 'team' ? 'active' : ''}`}
+                onClick={() => setActiveTab('team')}
+              >
+                <Users size={18} />
+                <span>Team</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -558,11 +570,13 @@ const Settings = () => {
           {activeTab === 'notifications' && (
             <div className="settings-section">
               <h2>Notification Preferences</h2>
-              <p className="section-description">Manage how you receive notifications</p>
+              <p className="section-description">Manage your notifications and team invitations</p>
               
-              <div className="settings-placeholder">
+              <TeamInvites />
+              
+              <div className="settings-placeholder" style={{ marginTop: '40px' }}>
                 <Bell size={48} />
-                <p>Notification settings coming soon!</p>
+                <p>Additional notification settings coming soon!</p>
               </div>
             </div>
           )}
@@ -576,6 +590,14 @@ const Settings = () => {
                 <Shield size={48} />
                 <p>Privacy settings coming soon!</p>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'team' && (
+            <div className="settings-section">
+              <h2>Team Management</h2>
+              <p className="section-description">Create and manage your streaming team</p>
+              <TeamManager />
             </div>
           )}
         </div>
