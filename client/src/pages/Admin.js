@@ -261,6 +261,32 @@ const Admin = () => {
     }
   };
 
+  const handleIpBan = async (userId, username) => {
+    if (!window.confirm(`🚫 IP BAN ${username}?\n\nThis will:\n- Ban ALL their IP addresses\n- Block them from accessing the entire site\n- Persist even after refresh\n\nThis is a SITE-WIDE ban!`)) return;
+
+    try {
+      const response = await axios.post(`/api/admin/users/${userId}/ip-ban`);
+      await fetchUsers();
+      alert(`✅ ${username} is now IP BANNED!\n\nBanned IPs:\n${response.data.bannedIPs?.join('\n') || 'Unknown'}`);
+    } catch (error) {
+      console.error('Error IP banning user:', error);
+      alert(error.response?.data?.message || 'Failed to IP ban user');
+    }
+  };
+
+  const handleIpUnban = async (userId, username) => {
+    if (!window.confirm(`Remove IP ban from ${username}?`)) return;
+
+    try {
+      const response = await axios.post(`/api/admin/users/${userId}/ip-unban`);
+      await fetchUsers();
+      alert(`✅ ${username} is now IP UNBANNED!\n\nUnbanned IPs:\n${response.data.unbannedIPs?.join('\n') || 'Unknown'}`);
+    } catch (error) {
+      console.error('Error IP unbanning user:', error);
+      alert(error.response?.data?.message || 'Failed to IP unban user');
+    }
+  };
+
   const handleViewStreamKey = (streamKey, username) => {
     setSelectedKey({ streamKey, username });
     setShowKeyModal(true);
@@ -545,6 +571,27 @@ const Admin = () => {
                           </button>
                         )}
 
+                        {/* IP Ban/Unban */}
+                        {u.role !== 'admin' && !u.isIpBanned && (
+                          <button
+                            className="btn-action ip-ban"
+                            onClick={() => handleIpBan(u.id || u._id, u.username)}
+                            title="IP Ban (Site-Wide)"
+                          >
+                            🚫
+                          </button>
+                        )}
+
+                        {u.isIpBanned && (
+                          <button
+                            className="btn-action ip-unban"
+                            onClick={() => handleIpUnban(u.id || u._id, u.username)}
+                            title="Remove IP Ban"
+                          >
+                            ✅
+                          </button>
+                        )}
+
                         {/* Delete User */}
                         {u.role !== 'admin' && (
                           <button
@@ -657,6 +704,18 @@ const Admin = () => {
                 <div className="detail-row">
                   <strong>Chat Banned:</strong>
                   <span>{selectedUser.isChatBanned ? '🚫 Yes' : '✅ No'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>IP Banned:</strong>
+                  <span>{selectedUser.isIpBanned ? '🚫 Yes (SITE-WIDE)' : '✅ No'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Current IP:</strong>
+                  <span>{selectedUser.ipAddress || 'Unknown'}</span>
+                </div>
+                <div className="detail-row">
+                  <strong>Last IP:</strong>
+                  <span>{selectedUser.lastIpAddress || 'Unknown'}</span>
                 </div>
                 {selectedUser.streamKey && (
                   <div className="detail-row">

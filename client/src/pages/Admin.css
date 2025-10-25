@@ -771,3 +771,28 @@
   color: #fff;
   padding: 8px;
 }
+
+/* IP Ban/Unban Buttons */
+.btn-action.ip-ban {
+  background: #ff0000;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.btn-action.ip-ban:hover {
+  background: #cc0000;
+  transform: scale(1.1);
+}
+
+.btn-action.ip-unban {
+  background: #00ff00;
+  color: #000;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.btn-action.ip-unban:hover {
+  background: #00cc00;
+  transform: scale(1.1);
+}

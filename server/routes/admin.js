@@ -38,7 +38,7 @@ router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
     } else {
       const users = await User.find().select('-password');
       
-      // Map users to include stream keys explicitly
+      // Map users to include stream keys explicitly and IP info
       const usersWithKeys = users.map(u => ({
         _id: u._id,
         id: u._id,
@@ -50,6 +50,10 @@ router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
         isPartner: u.isPartner || false,
         isAffiliate: u.isAffiliate || false,
         isBanned: u.isBanned,
+        isChatBanned: u.isChatBanned || false,
+        isIpBanned: u.isIpBanned || false,
+        ipAddress: u.ipAddress || null,
+        lastIpAddress: u.lastIpAddress || null,
         createdAt: u.createdAt
       }));
 
