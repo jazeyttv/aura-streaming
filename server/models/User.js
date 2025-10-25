@@ -41,6 +41,65 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '#FFFFFF'
   },
+  // Channel Settings
+  bannedWords: [{
+    type: String,
+    lowercase: true
+  }],
+  moderationSettings: {
+    sexualContent: {
+      type: String,
+      enum: ['unfiltered', 'minimal', 'moderate', 'maximum'],
+      default: 'unfiltered'
+    },
+    hateSpeech: {
+      type: String,
+      enum: ['unfiltered', 'minimal', 'moderate', 'maximum'],
+      default: 'maximum'
+    },
+    violence: {
+      type: String,
+      enum: ['unfiltered', 'minimal', 'moderate', 'maximum'],
+      default: 'unfiltered'
+    },
+    bullying: {
+      type: String,
+      enum: ['unfiltered', 'minimal', 'moderate', 'maximum'],
+      default: 'unfiltered'
+    },
+    drugs: {
+      type: String,
+      enum: ['unfiltered', 'minimal', 'moderate', 'maximum'],
+      default: 'unfiltered'
+    },
+    weapons: {
+      type: String,
+      enum: ['unfiltered', 'minimal', 'moderate', 'maximum'],
+      default: 'unfiltered'
+    },
+    gibberish: {
+      type: Boolean,
+      default: false
+    },
+    spam: {
+      type: Boolean,
+      default: false
+    }
+  },
+  slowMode: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    duration: {
+      type: Number,
+      default: 0 // in seconds
+    }
+  },
+  followerGoal: {
+    type: Number,
+    default: null
+  },
   isStreamer: {
     type: Boolean,
     default: true
