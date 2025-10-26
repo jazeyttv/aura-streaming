@@ -4,6 +4,7 @@ const UserStats = require('../models/UserStats');
 const WatchHistory = require('../models/WatchHistory');
 const Activity = require('../models/Activity');
 const auth = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/auth');
 
 // Get current user's stats
 router.get('/my-stats', auth, async (req, res) => {
@@ -97,11 +98,13 @@ router.post('/add-watch-time', auth, async (req, res) => {
 });
 
 // Add chat message (called when user sends a message)
-router.post('/add-message', auth, async (req, res) => {
+router.post('/add-message', optionalAuth, async (req, res) => {
   try {
     // Verify user is authenticated
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'User not authenticated' });
+      // Don't return error - just acknowledge the message was sent
+      // Stats tracking is optional, message was already sent via socket
+      return res.json({ message: 'Message sent (stats not recorded)' });
     }
     
     let stats = await UserStats.findOne({ userId: req.user.id });
@@ -128,7 +131,8 @@ router.post('/add-message', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error recording message:', error);
-    res.status(500).json({ message: 'Server error' });
+    // Don't return error status - stats tracking is optional
+    res.json({ message: 'Message sent (stats error)' });
   }
 });
 

@@ -288,9 +288,15 @@ const StreamView = () => {
     if (!user) return;
     
     try {
-      await axios.post('/api/stats/add-message');
+      await axios.post('/api/stats/add-message', {}, {
+        validateStatus: function (status) {
+          // Don't throw error on any status, just log it
+          return true;
+        }
+      });
     } catch (error) {
-      console.error('Error tracking message:', error);
+      // Silently fail - message was already sent via socket
+      console.log('Stats tracking skipped:', error.message);
     }
   };
 
