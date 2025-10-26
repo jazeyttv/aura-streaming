@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SearchBar from './SearchBar';
-import { Menu, X, User, LogOut, Video, Settings, ChevronDown, Bell } from 'lucide-react';
+import { Menu, X, User, LogOut, Video, Settings, ChevronDown, Bell, Users, Check } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import config from '../config';
@@ -16,6 +16,7 @@ const Navbar = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [teamInvites, setTeamInvites] = useState([]);
   const userMenuRef = useRef(null);
   const notifMenuRef = useRef(null);
   const socketRef = useRef(null);
@@ -56,11 +57,41 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get('/api/notifications');
-      setNotifications(response.data.notifications || []);
-      setUnreadCount(response.data.unreadCount || 0);
+      const [notifResponse, invitesResponse] = await Promise.all([
+        axios.get('/api/notifications'),
+        axios.get('/api/teams/invites/pending')
+      ]);
+      
+      setNotifications(notifResponse.data.notifications || []);
+      setTeamInvites(invitesResponse.data || []);
+      
+      // Total unread count includes notifications + team invites
+      const notifCount = notifResponse.data.unreadCount || 0;
+      const inviteCount = invitesResponse.data.length || 0;
+      setUnreadCount(notifCount + inviteCount);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const handleAcceptInvite = async (teamName) => {
+    try {
+      await axios.post(`/api/teams/${teamName}/accept`);
+      setTeamInvites(teamInvites.filter(inv => inv.teamName !== teamName));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      alert(`You have joined the team!`);
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to accept invitation');
+    }
+  };
+
+  const handleDeclineInvite = async (teamName) => {
+    try {
+      await axios.post(`/api/teams/${teamName}/decline`);
+      setTeamInvites(teamInvites.filter(inv => inv.teamName !== teamName));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to decline invitation');
     }
   };
 
@@ -139,39 +170,81 @@ const Navbar = () => {
                   <div className="notifications-dropdown">
                     <div className="notifications-header">
                       <h3>Notifications</h3>
-                      {notifications.length > 0 && (
+                      {(notifications.length > 0 || teamInvites.length > 0) && (
                         <div className="notifications-actions">
-                          <button onClick={markAllAsRead} className="btn-text">
-                            Mark all read
-                          </button>
-                          <button onClick={clearAll} className="btn-text">
-                            Clear all
-                          </button>
+                          {notifications.length > 0 && (
+                            <>
+                              <button onClick={markAllAsRead} className="btn-text">
+                                Mark all read
+                              </button>
+                              <button onClick={clearAll} className="btn-text">
+                                Clear all
+                              </button>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
 
                     <div className="notifications-list">
-                      {notifications.length === 0 ? (
+                      {teamInvites.length === 0 && notifications.length === 0 ? (
                         <div className="no-notifications">
                           <Bell size={32} />
                           <p>No notifications yet</p>
                         </div>
                       ) : (
-                        notifications.map(notif => (
-                          <div 
-                            key={notif._id} 
-                            className={`notification-item ${!notif.isRead ? 'unread' : ''}`}
-                            onClick={() => markAsRead(notif._id)}
-                          >
-                            <div className="notification-content">
-                              <p>{notif.message}</p>
-                              <span className="notification-time">
-                                {new Date(notif.createdAt).toLocaleString()}
-                              </span>
+                        <>
+                          {/* Team Invites First */}
+                          {teamInvites.map(invite => (
+                            <div key={invite.teamName} className="notification-item team-invite unread">
+                              <div className="notification-content">
+                                <div className="invite-header">
+                                  <Users size={16} />
+                                  <strong>Team Invitation</strong>
+                                </div>
+                                <p>{invite.owner?.username} invited you to join <strong>{invite.teamDisplayName}</strong></p>
+                                <div className="invite-actions">
+                                  <button 
+                                    className="btn-accept-invite"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAcceptInvite(invite.teamName);
+                                    }}
+                                  >
+                                    <Check size={14} />
+                                    Accept
+                                  </button>
+                                  <button 
+                                    className="btn-decline-invite"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeclineInvite(invite.teamName);
+                                    }}
+                                  >
+                                    <X size={14} />
+                                    Decline
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))
+                          ))}
+
+                          {/* Regular Notifications */}
+                          {notifications.map(notif => (
+                            <div 
+                              key={notif._id} 
+                              className={`notification-item ${!notif.isRead ? 'unread' : ''}`}
+                              onClick={() => markAsRead(notif._id)}
+                            >
+                              <div className="notification-content">
+                                <p>{notif.message}</p>
+                                <span className="notification-time">
+                                  {new Date(notif.createdAt).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </>
                       )}
                     </div>
                   </div>
