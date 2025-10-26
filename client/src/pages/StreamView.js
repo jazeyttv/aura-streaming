@@ -489,6 +489,17 @@ const StreamView = () => {
             streamUrl={stream?.streamUrl}
             className="kick-video-player"
           />
+          {/* Video Overlay with Live Badge and Viewer Count */}
+          <div className="kick-video-overlay">
+            <div className="kick-live-badge">
+              <span className="kick-live-dot"></span>
+              LIVE
+            </div>
+            <div className="kick-viewer-badge">
+              <Eye size={14} />
+              {viewerCount}
+            </div>
+          </div>
         </div>
 
         {/* Stream Info Section */}
