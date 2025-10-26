@@ -734,7 +734,6 @@ const StreamView = () => {
           </button>
         </form>
       </div>
-    </div>
 
       {/* User Card Modal */}
       {selectedUsername && (
