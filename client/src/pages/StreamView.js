@@ -467,16 +467,24 @@ const StreamView = () => {
       {/* Left Sidebar - Following & Recommended */}
       <aside className="kick-stream-left-sidebar">
         <div className="kick-sidebar-section">
-          <h4 className="kick-sidebar-title">Following</h4>
+          <div className="kick-sidebar-header">
+            <Heart size={14} />
+            <h4 className="kick-sidebar-title">FOLLOWING</h4>
+          </div>
           <div className="kick-sidebar-channels">
-            <p className="kick-sidebar-empty">Follow channels to see them here!</p>
+            <p className="kick-sidebar-empty">No live channels</p>
+            <p className="kick-sidebar-hint">Follow channels to see them here</p>
           </div>
         </div>
         
         <div className="kick-sidebar-section">
-          <h4 className="kick-sidebar-title">Recommended</h4>
+          <div className="kick-sidebar-header">
+            <Trophy size={14} />
+            <h4 className="kick-sidebar-title">RECOMMENDED</h4>
+          </div>
           <div className="kick-sidebar-channels">
-            <p className="kick-sidebar-empty">Loading recommendations...</p>
+            <p className="kick-sidebar-empty">No recommendations</p>
+            <p className="kick-sidebar-hint">Check back later for suggestions</p>
           </div>
         </div>
       </aside>
@@ -609,15 +617,15 @@ const StreamView = () => {
           </div>
         </div>
 
-        {/* Weekly Top Gifters - Like Kick */}
+        {/* Watch Time Leaderboard */}
         <div className="kick-chat-leaderboard">
           <div 
             className="kick-leaderboard-header"
             onClick={() => setLeaderboardCollapsed(!leaderboardCollapsed)}
           >
             <div className="kick-leaderboard-title">
-              <Crown size={16} />
-              <span>Weekly top Gifters</span>
+              <Trophy size={16} />
+              <span>Watch time</span>
               {leaderboard.length > 0 && (
                 <span className="kick-leaderboard-count">{leaderboard.length}</span>
               )}
@@ -631,9 +639,9 @@ const StreamView = () => {
             <div className="kick-leaderboard-content">
               {leaderboard.length === 0 ? (
                 <div className="kick-leaderboard-empty">
-                  <Crown size={24} />
-                  <p>No top gifters yet</p>
-                  <span>Top gifters will appear here</span>
+                  <Trophy size={24} />
+                  <p>No watchers yet</p>
+                  <span>Watch time will appear here</span>
                 </div>
               ) : (
                 leaderboard.map((viewer, index) => (

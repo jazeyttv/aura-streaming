@@ -99,6 +99,11 @@ router.post('/add-watch-time', auth, async (req, res) => {
 // Add chat message (called when user sends a message)
 router.post('/add-message', auth, async (req, res) => {
   try {
+    // Verify user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+    
     let stats = await UserStats.findOne({ userId: req.user.id });
     if (!stats) {
       stats = new UserStats({ userId: req.user.id });
