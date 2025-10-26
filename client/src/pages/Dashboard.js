@@ -232,14 +232,14 @@ const Dashboard = () => {
       if (activeStream && activeStream.isLive) {
         // Update existing live stream
         await axios.put(`/api/streams/${activeStream.id || activeStream._id}`, streamSettings);
-        setMessage('✅ Stream updated successfully!');
+        setMessage('Stream updated successfully!');
         setTimeout(() => setMessage(''), 3000);
         fetchActiveStream();
       } else {
         // Save settings to localStorage for when you go live
         localStorage.setItem('streamSettings', JSON.stringify(streamSettings));
         console.log('[DASHBOARD] Stream settings saved for next stream:', streamSettings);
-        setMessage('✅ Settings saved! They will apply when you go live.');
+        setMessage('Settings saved! They will apply when you go live.');
         setTimeout(() => setMessage(''), 3000);
       }
     } catch (error) {
@@ -257,7 +257,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post('/api/streams/regenerate-key');
-      alert('✅ Stream key regenerated! Please update OBS with your new key.');
+      alert('Stream key regenerated! Please update OBS with your new key.');
       window.location.reload();
     } catch (error) {
       console.error('Error regenerating key:', error);

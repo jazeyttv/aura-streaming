@@ -184,9 +184,9 @@ const Admin = () => {
         enabled: response.data.enabled,
         message: response.data.message
       });
-      alert(`✅ Maintenance mode ${response.data.enabled ? 'ENABLED' : 'DISABLED'}`);
+      alert(`Maintenance mode ${response.data.enabled ? 'ENABLED' : 'DISABLED'}`);
     } catch (error) {
-      alert('❌ Failed to toggle maintenance mode');
+      alert('Failed to toggle maintenance mode');
     }
     setMaintenanceLoading(false);
   };
@@ -227,7 +227,7 @@ const Admin = () => {
     try {
       const response = await axios.post(`/api/admin/users/${userId}/global-unban`);
       await fetchUsers();
-      alert(`✅ ${username} unbanned from ${response.data.unbannedFromStreams} streams!`);
+      alert(`${username} unbanned from ${response.data.unbannedFromStreams} streams!`);
     } catch (error) {
       console.error('Error globally unbanning user:', error);
       alert('Failed to globally unban user');
@@ -444,12 +444,12 @@ const Admin = () => {
   };
 
   const handleIpBan = async (userId, username) => {
-    if (!window.confirm(`🚫 IP BAN ${username}?\n\nThis will:\n- Ban ALL their IP addresses\n- Block them from accessing the entire site\n- Persist even after refresh\n\nThis is a SITE-WIDE ban!`)) return;
+    if (!window.confirm(`IP BAN ${username}?\n\nThis will:\n- Ban ALL their IP addresses\n- Block them from accessing the entire site\n- Persist even after refresh\n\nThis is a SITE-WIDE ban!`)) return;
 
     try {
       const response = await axios.post(`/api/admin/users/${userId}/ip-ban`);
       await fetchUsers();
-      alert(`✅ ${username} is now IP BANNED!\n\nBanned IPs:\n${response.data.bannedIPs?.join('\n') || 'Unknown'}`);
+      alert(`${username} is now IP BANNED!\n\nBanned IPs:\n${response.data.bannedIPs?.join('\n') || 'Unknown'}`);
     } catch (error) {
       console.error('Error IP banning user:', error);
       alert(error.response?.data?.message || 'Failed to IP ban user');
@@ -462,7 +462,7 @@ const Admin = () => {
     try {
       const response = await axios.post(`/api/admin/users/${userId}/ip-unban`);
       await fetchUsers();
-      alert(`✅ ${username} is now IP UNBANNED!\n\nUnbanned IPs:\n${response.data.unbannedIPs?.join('\n') || 'Unknown'}`);
+      alert(`${username} is now IP UNBANNED!\n\nUnbanned IPs:\n${response.data.unbannedIPs?.join('\n') || 'Unknown'}`);
     } catch (error) {
       console.error('Error IP unbanning user:', error);
       alert(error.response?.data?.message || 'Failed to IP unban user');
@@ -882,7 +882,7 @@ const Admin = () => {
                             onClick={() => handleIpBan(u.id || u._id, u.username)}
                             title="IP Ban (Site-Wide)"
                           >
-                            🚫
+                            <Ban size={14} />
                           </button>
                         )}
 
@@ -892,7 +892,7 @@ const Admin = () => {
                             onClick={() => handleIpUnban(u.id || u._id, u.username)}
                             title="Remove IP Ban"
                           >
-                            ✅
+                            <UserCheck size={14} />
                           </button>
                         )}
 
@@ -902,7 +902,7 @@ const Admin = () => {
                           onClick={() => handleGlobalUnban(u.id || u._id, u.username)}
                           title="Unban from ALL Streams"
                         >
-                          🌍
+                          <Shield size={14} />
                         </button>
 
                         {/* Delete User */}
@@ -1000,27 +1000,27 @@ const Admin = () => {
                 </div>
                 <div className="detail-row">
                   <strong>Can Stream:</strong>
-                  <span>{selectedUser.isStreamer ? '✅ Yes' : '❌ No'}</span>
+                  <span>{selectedUser.isStreamer ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="detail-row">
                   <strong>Partner:</strong>
-                  <span>{selectedUser.isPartner ? '✅ Yes' : '❌ No'}</span>
+                  <span>{selectedUser.isPartner ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="detail-row">
                   <strong>Affiliate:</strong>
-                  <span>{selectedUser.isAffiliate ? '✅ Yes' : '❌ No'}</span>
+                  <span>{selectedUser.isAffiliate ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="detail-row">
                   <strong>Banned:</strong>
-                  <span>{selectedUser.isBanned ? '🚫 Yes' : '✅ No'}</span>
+                  <span>{selectedUser.isBanned ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="detail-row">
                   <strong>Chat Banned:</strong>
-                  <span>{selectedUser.isChatBanned ? '🚫 Yes' : '✅ No'}</span>
+                  <span>{selectedUser.isChatBanned ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="detail-row">
                   <strong>IP Banned:</strong>
-                  <span>{selectedUser.isIpBanned ? '🚫 Yes (SITE-WIDE)' : '✅ No'}</span>
+                  <span>{selectedUser.isIpBanned ? 'Yes (SITE-WIDE)' : 'No'}</span>
                 </div>
                 <div className="detail-row">
                   <strong>Current IP:</strong>

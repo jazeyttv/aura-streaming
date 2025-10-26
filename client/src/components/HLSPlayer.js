@@ -8,16 +8,16 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
 
   useEffect(() => {
     if (!streamUrl || !videoRef.current) {
-      console.log('⏸️ No stream URL or video element');
+      console.log('No stream URL or video element');
       return;
     }
 
     const video = videoRef.current;
-    console.log('🎥 Initializing HLS player for:', streamUrl);
+    console.log('Initializing HLS player for:', streamUrl);
 
     // Check if HLS is supported
     if (Hls.isSupported()) {
-      console.log('✅ HLS.js is supported');
+      console.log('HLS.js is supported');
       
       // Create new HLS instance with ULTRA OPTIMIZED settings
       const hls = new Hls({
@@ -81,9 +81,9 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
 
       // Event handlers
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('📋 HLS Manifest parsed - PLAYING NOW!');
+        console.log('HLS Manifest parsed - PLAYING NOW');
         video.play().catch(err => {
-          console.warn('⚠️ Autoplay prevented, trying again...', err.message);
+          console.warn('Autoplay prevented, trying again...', err.message);
           // Try again after a short delay
           setTimeout(() => video.play().catch(() => {}), 100);
         });
@@ -91,11 +91,11 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          console.error('❌ FATAL HLS Error:', data.type, data.details);
+          console.error('FATAL HLS Error:', data.type, data.details);
           
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              console.log('🔄 Network error - RECOVERING IMMEDIATELY');
+              console.log('Network error - RECOVERING IMMEDIATELY');
               // Immediate recovery
               setTimeout(() => {
                 hls.startLoad();
@@ -104,7 +104,7 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
               break;
               
             case Hls.ErrorTypes.MEDIA_ERROR:
-              console.log('🔄 Media error - RECOVERING IMMEDIATELY');
+              console.log('Media error - RECOVERING IMMEDIATELY');
               // Try to recover
               hls.recoverMediaError();
               setTimeout(() => {
@@ -113,7 +113,7 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
               break;
               
             default:
-              console.error('💀 Fatal error - RESTARTING STREAM');
+              console.error('Fatal error - RESTARTING STREAM');
               // Restart the entire stream
               hls.destroy();
               setTimeout(() => {
@@ -128,19 +128,19 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
           }
         } else {
           // Non-fatal error - just log it
-          console.warn('⚠️ Non-fatal HLS warning:', data.details);
+          console.warn('Non-fatal HLS warning:', data.details);
         }
       });
 
       // Auto-resume on buffer stall
       hls.on(Hls.Events.BUFFER_STALLED, () => {
-        console.log('⚠️ Buffer stalled - forcing playback resume');
+        console.log('Buffer stalled - forcing playback resume');
         video.play().catch(() => {});
       });
 
       // Log when buffering
       hls.on(Hls.Events.BUFFER_APPENDING, () => {
-        console.log('📦 Buffering data...');
+        console.log('Buffering data...');
       });
 
       // Celebrate successful fragment loads
@@ -148,32 +148,32 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
       hls.on(Hls.Events.FRAG_LOADED, () => {
         fragCount++;
         if (fragCount % 10 === 0) {
-          console.log(`✅ Loaded ${fragCount} fragments - stream is smooth!`);
+          console.log(`Loaded ${fragCount} fragments - stream is smooth`);
         }
       });
 
       // Log quality changes
       hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-        console.log(`🎬 Quality: Level ${data.level}`);
+        console.log(`Quality: Level ${data.level}`);
       });
 
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       // Native HLS support (Safari)
-      console.log('✅ Native HLS support (Safari)');
+      console.log('Native HLS support (Safari)');
       video.src = streamUrl;
       video.addEventListener('loadedmetadata', () => {
-        console.log('📋 Native HLS loaded');
+        console.log('Native HLS loaded');
         video.play().catch(err => {
-          console.warn('⚠️ Autoplay prevented:', err.message);
+          console.warn('Autoplay prevented:', err.message);
         });
       });
     } else {
-      console.error('❌ HLS is not supported in this browser');
+      console.error('HLS is not supported in this browser');
     }
 
     // Cleanup function
     return () => {
-      console.log('🧹 Cleaning up HLS player');
+      console.log('Cleaning up HLS player');
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
