@@ -37,6 +37,8 @@ const StreamView = () => {
   const [showUnbanModal, setShowUnbanModal] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
   const [banTarget, setBanTarget] = useState(null);
+  const [followingStreams, setFollowingStreams] = useState([]);
+  const [recommendedStreams, setRecommendedStreams] = useState([]);
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -182,6 +184,19 @@ const StreamView = () => {
     }
   }, [streamId]);
 
+  useEffect(() => {
+    fetchFollowingStreams();
+    fetchRecommendedStreams();
+    
+    // Update every 30 seconds
+    const sidebarInterval = setInterval(() => {
+      fetchFollowingStreams();
+      fetchRecommendedStreams();
+    }, 30000);
+    
+    return () => clearInterval(sidebarInterval);
+  }, [user]);
+
   const fetchStream = async () => {
     try {
       const response = await axios.get(`/api/streams/${streamId}`);
@@ -212,6 +227,29 @@ const StreamView = () => {
       setLeaderboard(response.data);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+    }
+  };
+
+  const fetchFollowingStreams = async () => {
+    try {
+      if (user) {
+        const response = await axios.get('/api/users/following/live');
+        setFollowingStreams(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching following streams:', error);
+    }
+  };
+
+  const fetchRecommendedStreams = async () => {
+    try {
+      const response = await axios.get('/api/streams/live');
+      // Get random 5 streams, excluding current stream
+      const others = response.data.filter(s => s._id !== streamId);
+      const shuffled = others.sort(() => 0.5 - Math.random());
+      setRecommendedStreams(shuffled.slice(0, 5));
+    } catch (error) {
+      console.error('Error fetching recommended streams:', error);
     }
   };
 
@@ -467,24 +505,72 @@ const StreamView = () => {
       {/* Left Sidebar - Following & Recommended */}
       <aside className="kick-stream-left-sidebar">
         <div className="kick-sidebar-section">
-          <div className="kick-sidebar-header">
-            <Heart size={14} />
-            <h4 className="kick-sidebar-title">FOLLOWING</h4>
-          </div>
+          <h4 className="kick-sidebar-title">FOLLOWING</h4>
           <div className="kick-sidebar-channels">
-            <p className="kick-sidebar-empty">No live channels</p>
-            <p className="kick-sidebar-hint">Follow channels to see them here</p>
+            {followingStreams.length === 0 ? (
+              <>
+                <p className="kick-sidebar-empty">No live channels</p>
+                <p className="kick-sidebar-hint">Follow channels to see them here</p>
+              </>
+            ) : (
+              followingStreams.map((stream) => (
+                <div 
+                  key={stream._id} 
+                  className="kick-sidebar-channel"
+                  onClick={() => navigate(`/stream/${stream._id}`)}
+                >
+                  <div className="kick-sidebar-channel-avatar">
+                    {stream.streamer?.avatar ? (
+                      <img src={stream.streamer.avatar} alt={stream.streamerUsername} />
+                    ) : (
+                      <div className="kick-sidebar-channel-avatar-placeholder">
+                        {stream.streamerUsername[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div className="kick-sidebar-live-badge">LIVE</div>
+                  </div>
+                  <div className="kick-sidebar-channel-info">
+                    <div className="kick-sidebar-channel-name">{stream.streamerUsername}</div>
+                    <div className="kick-sidebar-channel-category">{stream.category || 'Just Chatting'}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
         
         <div className="kick-sidebar-section">
-          <div className="kick-sidebar-header">
-            <Trophy size={14} />
-            <h4 className="kick-sidebar-title">RECOMMENDED</h4>
-          </div>
+          <h4 className="kick-sidebar-title">RECOMMENDED</h4>
           <div className="kick-sidebar-channels">
-            <p className="kick-sidebar-empty">No recommendations</p>
-            <p className="kick-sidebar-hint">Check back later for suggestions</p>
+            {recommendedStreams.length === 0 ? (
+              <>
+                <p className="kick-sidebar-empty">No recommendations</p>
+                <p className="kick-sidebar-hint">Check back later for suggestions</p>
+              </>
+            ) : (
+              recommendedStreams.map((stream) => (
+                <div 
+                  key={stream._id} 
+                  className="kick-sidebar-channel"
+                  onClick={() => navigate(`/stream/${stream._id}`)}
+                >
+                  <div className="kick-sidebar-channel-avatar">
+                    {stream.streamer?.avatar ? (
+                      <img src={stream.streamer.avatar} alt={stream.streamerUsername} />
+                    ) : (
+                      <div className="kick-sidebar-channel-avatar-placeholder">
+                        {stream.streamerUsername[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div className="kick-sidebar-live-badge">LIVE</div>
+                  </div>
+                  <div className="kick-sidebar-channel-info">
+                    <div className="kick-sidebar-channel-name">{stream.streamerUsername}</div>
+                    <div className="kick-sidebar-channel-category">{stream.category || 'Just Chatting'}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </aside>
