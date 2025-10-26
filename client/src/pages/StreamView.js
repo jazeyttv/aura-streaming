@@ -689,9 +689,10 @@ const StreamView = () => {
                           }
                         }}
                       >
-                        {msg.username}
                         {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge, msg.userId)}
+                        {msg.username}
                       </span>
+                      <span className="chat-separator">: </span>
                       <span className="chat-text">{msg.message}</span>
                       {canModerate && (
                         <div className="chat-mod-actions">
