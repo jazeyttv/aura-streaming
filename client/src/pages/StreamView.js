@@ -582,25 +582,33 @@ const StreamView = () => {
           </div>
 
           {/* Leaderboard */}
-          {leaderboard.length > 0 && (
-            <div className="chat-leaderboard">
-              <div 
-                className="leaderboard-header"
-                onClick={() => setLeaderboardCollapsed(!leaderboardCollapsed)}
-              >
-                <div className="leaderboard-title">
-                  <Trophy size={16} />
-                  <span>Top Watchers</span>
+          <div className="chat-leaderboard">
+            <div 
+              className="leaderboard-header"
+              onClick={() => setLeaderboardCollapsed(!leaderboardCollapsed)}
+            >
+              <div className="leaderboard-title">
+                <Trophy size={16} />
+                <span>Top Watchers</span>
+                {leaderboard.length > 0 && (
                   <span className="leaderboard-count">{leaderboard.length}</span>
-                </div>
-                <button className="leaderboard-collapse-btn">
-                  {leaderboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-                </button>
+                )}
               </div>
-              
-              {!leaderboardCollapsed && (
-                <div className="leaderboard-content">
-                  {leaderboard.map((viewer, index) => (
+              <button className="leaderboard-collapse-btn">
+                {leaderboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </button>
+            </div>
+            
+            {!leaderboardCollapsed && (
+              <div className="leaderboard-content">
+                {leaderboard.length === 0 ? (
+                  <div className="leaderboard-empty">
+                    <Trophy size={24} style={{ opacity: 0.3 }} />
+                    <p>No viewers yet</p>
+                    <span>Watch time will appear here</span>
+                  </div>
+                ) : (
+                  leaderboard.map((viewer, index) => (
                     <div 
                       key={index} 
                       className={`leaderboard-item ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : ''}`}
@@ -628,11 +636,11 @@ const StreamView = () => {
                       </div>
                       <div className="leaderboard-time">{viewer.watchTimeFormatted}</div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                  ))
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="chat-messages">
             {chatMessages.length === 0 ? (
