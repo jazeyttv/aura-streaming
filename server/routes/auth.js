@@ -3,6 +3,9 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const UserStats = require('../models/UserStats');
+const Achievement = require('../models/Achievement');
+const Activity = require('../models/Activity');
 const { v4: uuidv4 } = require('uuid');
 const { getClientIP } = require('../middleware/ipBanCheck');
 
@@ -228,6 +231,36 @@ router.post('/register', async (req, res) => {
 
       await user.save();
       console.log('[REGISTER] ✅ User saved to MongoDB:', username);
+
+      // Create initial UserStats
+      const userStats = new UserStats({ userId: user._id });
+      await userStats.save();
+
+      // Unlock "First Steps" achievement
+      const firstStepsAchievement = Achievement.ACHIEVEMENTS.FIRST_STEPS;
+      await Achievement.create({
+        userId: user._id,
+        achievementId: firstStepsAchievement.id,
+        achievementName: firstStepsAchievement.name,
+        achievementDescription: firstStepsAchievement.description,
+        achievementIcon: firstStepsAchievement.icon,
+        achievementRarity: firstStepsAchievement.rarity
+      });
+
+      // Award welcome points
+      userStats.addPoints(100);
+      userStats.addXP(100);
+      await userStats.save();
+
+      // Create welcome activity
+      await Activity.create({
+        userId: user._id,
+        activityType: 'joined',
+        activityData: {},
+        activityText: 'Joined Aura! Welcome to the community! 🎉'
+      });
+
+      console.log('[REGISTER] ✅ Initial stats and achievement created for:', username);
 
       const token = jwt.sign(
         { userId: user._id, username: user.username, role: user.role },

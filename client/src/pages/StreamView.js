@@ -7,7 +7,7 @@ import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
 import UserCard from '../components/UserCard';
 import ModTools from '../components/ModTools';
-import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag } from 'lucide-react';
+import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
 import ReportModal from '../components/ReportModal';
 import './StreamView.css';
@@ -31,9 +31,13 @@ const StreamView = () => {
   const [modTargetUser, setModTargetUser] = useState(null);
   const [channelMods, setChannelMods] = useState([]);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboardCollapsed, setLeaderboardCollapsed] = useState(false);
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
+  const watchTimeInterval = useRef(null);
+  const watchStartTime = useRef(null);
 
   const isModerator = user && (user.role === 'moderator' || user.role === 'admin');
   const isAdmin = user && user.role === 'admin';
@@ -51,6 +55,20 @@ const StreamView = () => {
       userId: user?.id || 'anonymous',
       userRole: user?.role || 'user'
     });
+
+    // Start watch time tracking if user is logged in
+    if (user) {
+      watchStartTime.current = Date.now();
+      
+      // Send watch time every minute
+      watchTimeInterval.current = setInterval(() => {
+        const minutesWatched = Math.floor((Date.now() - watchStartTime.current) / 60000);
+        if (minutesWatched > 0) {
+          trackWatchTime(minutesWatched);
+          watchStartTime.current = Date.now(); // Reset timer
+        }
+      }, 60000); // Check every minute
+    }
 
     socketRef.current.on('viewer-count', (count) => {
       setViewerCount(count);
@@ -115,6 +133,19 @@ const StreamView = () => {
     });
 
     return () => {
+      // Track remaining watch time before leaving
+      if (user && watchStartTime.current) {
+        const minutesWatched = Math.floor((Date.now() - watchStartTime.current) / 60000);
+        if (minutesWatched > 0) {
+          trackWatchTime(minutesWatched);
+        }
+      }
+
+      // Clear watch time interval
+      if (watchTimeInterval.current) {
+        clearInterval(watchTimeInterval.current);
+      }
+
       if (socketRef.current) {
         socketRef.current.emit('leave-stream', streamId);
         socketRef.current.disconnect();
@@ -132,6 +163,20 @@ const StreamView = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+
+  // Fetch leaderboard periodically
+  useEffect(() => {
+    if (streamId) {
+      fetchLeaderboard();
+      
+      // Update leaderboard every 5 seconds
+      const leaderboardInterval = setInterval(() => {
+        fetchLeaderboard();
+      }, 5000);
+      
+      return () => clearInterval(leaderboardInterval);
+    }
+  }, [streamId]);
 
   const fetchStream = async () => {
     try {
@@ -157,6 +202,15 @@ const StreamView = () => {
     }
   };
 
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await axios.get(`/api/leaderboard/stream/${streamId}/top-watchers`);
+      setLeaderboard(response.data);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+    }
+  };
+
   const checkFollowing = async () => {
     if (!stream?.streamer?._id || !user) {
       console.log('⏭️ Skipping follow check:', { hasStream: !!stream?.streamer?._id, hasUser: !!user });
@@ -169,6 +223,32 @@ const StreamView = () => {
       setFollowerCount(response.data.followerCount || followerCount);
     } catch (error) {
       console.error('Error checking following status:', error);
+    }
+  };
+
+  const trackWatchTime = async (minutes) => {
+    if (!user || !stream) return;
+    
+    try {
+      await axios.post('/api/stats/add-watch-time', {
+        minutes,
+        streamerId: stream.streamer._id || stream.streamer,
+        streamerUsername: stream.streamerUsername,
+        streamTitle: stream.title
+      });
+      console.log(`✅ Tracked ${minutes} minute(s) of watch time`);
+    } catch (error) {
+      console.error('Error tracking watch time:', error);
+    }
+  };
+
+  const trackMessage = async () => {
+    if (!user) return;
+    
+    try {
+      await axios.post('/api/stats/add-message');
+    } catch (error) {
+      console.error('Error tracking message:', error);
     }
   };
 
@@ -229,6 +309,9 @@ const StreamView = () => {
       chatColor: user.chatColor || '#FFFFFF',
       channelName: stream?.streamerUsername || stream?.streamer?.username
     });
+
+    // Track message for stats
+    trackMessage();
 
     setMessageInput('');
     setLastMessageTime(Date.now());
@@ -497,6 +580,59 @@ const StreamView = () => {
               </div>
             </div>
           </div>
+
+          {/* Leaderboard */}
+          {leaderboard.length > 0 && (
+            <div className="chat-leaderboard">
+              <div 
+                className="leaderboard-header"
+                onClick={() => setLeaderboardCollapsed(!leaderboardCollapsed)}
+              >
+                <div className="leaderboard-title">
+                  <Trophy size={16} />
+                  <span>Top Watchers</span>
+                  <span className="leaderboard-count">{leaderboard.length}</span>
+                </div>
+                <button className="leaderboard-collapse-btn">
+                  {leaderboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                </button>
+              </div>
+              
+              {!leaderboardCollapsed && (
+                <div className="leaderboard-content">
+                  {leaderboard.map((viewer, index) => (
+                    <div 
+                      key={index} 
+                      className={`leaderboard-item ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : ''}`}
+                    >
+                      <div className="leaderboard-rank">#{index + 1}</div>
+                      <div 
+                        className="leaderboard-user"
+                        onClick={() => setSelectedUsername(viewer.username)}
+                      >
+                        {viewer.avatar ? (
+                          <img 
+                            src={viewer.avatar} 
+                            alt={viewer.displayName} 
+                            className="leaderboard-avatar"
+                          />
+                        ) : (
+                          <div className="leaderboard-avatar-placeholder">
+                            {viewer.displayName[0].toUpperCase()}
+                          </div>
+                        )}
+                        <span className="leaderboard-username">{viewer.displayName}</span>
+                        {viewer.isPartner && (
+                          <CheckCircle size={12} color="#00d9ff" style={{ marginLeft: '4px' }} />
+                        )}
+                      </div>
+                      <div className="leaderboard-time">{viewer.watchTimeFormatted}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="chat-messages">
             {chatMessages.length === 0 ? (

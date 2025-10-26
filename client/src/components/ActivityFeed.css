@@ -1,0 +1,131 @@
+.activity-feed {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.activity-feed-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 18px;
+  margin: 0 0 16px 0;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 217, 255, 0.2);
+}
+
+.activity-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #fff;
+}
+
+.activity-type-achievement_unlocked {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.activity-type-level_up {
+  background: linear-gradient(135deg, #00d9ff, #0099cc);
+}
+
+.activity-type-followed,
+.activity-type-joined {
+  background: linear-gradient(135deg, #00ff9d, #00cc7a);
+}
+
+.activity-type-stream_started {
+  background: linear-gradient(135deg, #ff006e, #cc005a);
+}
+
+.activity-type-became_partner {
+  background: linear-gradient(135deg, #9B59B6, #8E44AD);
+}
+
+.activity-type-became_affiliate {
+  background: linear-gradient(135deg, #3498DB, #2980B9);
+}
+
+.activity-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.activity-achievement-icon {
+  font-size: 20px;
+}
+
+.activity-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.activity-feed-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+}
+
+.activity-feed-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  color: rgba(255, 255, 255, 0.4);
+  gap: 10px;
+}
+
+.activity-feed-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .activity-item {
+    flex-wrap: wrap;
+  }
+
+  .activity-time {
+    width: 100%;
+    text-align: right;
+    margin-top: 4px;
+  }
+}
+

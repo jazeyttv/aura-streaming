@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SearchBar from './SearchBar';
-import { Menu, X, User, LogOut, Video, Settings, ChevronDown, Bell, Users, Check } from 'lucide-react';
+import { Menu, X, User, LogOut, Video, Settings, ChevronDown, Bell, Users, Check, Trophy } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import config from '../config';
@@ -152,6 +152,12 @@ const Navbar = () => {
 
         {/* Right Side - Auth Buttons or User Menu */}
         <div className="navbar-right">
+          {/* Leaderboard Link (always visible) */}
+          <Link to="/leaderboard" className="navbar-leaderboard-link">
+            <Trophy size={20} />
+            <span>Leaderboard</span>
+          </Link>
+
           {isAuthenticated ? (
             <>
               {/* Notifications Bell */}

@@ -52,6 +52,43 @@
   margin-left: 24px;
 }
 
+/* Leaderboard Link */
+.navbar-leaderboard-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  color: #FFD700;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.navbar-leaderboard-link:hover {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #FFD700;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.navbar-leaderboard-link span {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .navbar-leaderboard-link span {
+    display: none;
+  }
+
+  .navbar-leaderboard-link {
+    padding: 8px 12px;
+  }
+}
+
 /* Auth Buttons */
 .auth-buttons {
   display: flex;

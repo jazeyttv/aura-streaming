@@ -18,6 +18,9 @@ const searchRoutes = require('./routes/search');
 const hlsProxyRoutes = require('./routes/hls-proxy');
 const uploadRoutes = require('./routes/upload');
 const notificationRoutes = require('./routes/notifications');
+const achievementsRoutes = require('./routes/achievements');
+const statsRoutes = require('./routes/stats');
+const leaderboardRoutes = require('./routes/leaderboard');
 
 // Import IP ban middleware
 const { checkIPBan, getClientIP, initBannedIPs } = require('./middleware/ipBanCheck');
@@ -193,6 +196,7 @@ global.activeStreams = new Map();
 global.chatMessages = new Map();
 global.streamViewers = new Map();
 global.bannedUsers = new Map();
+global.streamWatchTimes = new Map(); // Track watch time per stream per socket
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -211,11 +215,26 @@ io.on('connection', (socket) => {
     socket.userId = userId;
     socket.username = username;
     socket.userRole = userRole || 'user';
+    socket.joinTime = Date.now(); // Track join time for watch time calculation
     
     if (!global.streamViewers.has(streamId)) {
       global.streamViewers.set(streamId, new Set());
     }
     global.streamViewers.get(streamId).add(socket.id);
+    
+    // Initialize watch time tracking for this stream
+    if (!global.streamWatchTimes.has(streamId)) {
+      global.streamWatchTimes.set(streamId, new Map());
+    }
+    global.streamWatchTimes.get(streamId).set(socket.id, 0);
+    
+    // Start tracking watch time
+    socket.watchTimeInterval = setInterval(() => {
+      if (socket.streamId === streamId) {
+        const currentTime = global.streamWatchTimes.get(streamId).get(socket.id) || 0;
+        global.streamWatchTimes.get(streamId).set(socket.id, currentTime + 1000); // Add 1 second
+      }
+    }, 1000);
     
     const viewerCount = global.streamViewers.get(streamId).size;
     io.to(streamId).emit('viewer-count', viewerCount);
@@ -523,6 +542,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
     
+    // Clear watch time interval
+    if (socket.watchTimeInterval) {
+      clearInterval(socket.watchTimeInterval);
+    }
+    
     if (socket.streamId && socket.username) {
       io.to(socket.streamId).emit('user-left', { 
         username: socket.username,
@@ -534,6 +558,17 @@ io.on('connection', (socket) => {
       if (viewers.has(socket.id)) {
         viewers.delete(socket.id);
         io.to(streamId).emit('viewer-count', viewers.size);
+      }
+    });
+    
+    // Clean up watch time tracking
+    global.streamWatchTimes.forEach((watchTimes, streamId) => {
+      if (watchTimes.has(socket.id)) {
+        watchTimes.delete(socket.id);
+      }
+      // Remove empty maps
+      if (watchTimes.size === 0) {
+        global.streamWatchTimes.delete(streamId);
       }
     });
   });
@@ -564,6 +599,9 @@ app.use('/api/chat-settings', require('./routes/chatSettings')); // Chat mode se
 app.use('/api/chat-moderation', require('./routes/chatModeration')); // Chat moderation
 app.use('/api/teams', require('./routes/teams'));
 app.use('/api/reports', require('./routes/reports')); // Teams system
+app.use('/api/achievements', achievementsRoutes); // Achievements system
+app.use('/api/stats', statsRoutes); // User stats and activity
+app.use('/api/leaderboard', leaderboardRoutes); // Stream leaderboards
 
 // Health check
 app.get('/api/health', (req, res) => {

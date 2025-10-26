@@ -10,6 +10,9 @@ import UserCard from '../components/UserCard';
 import ScheduleDisplay from '../components/ScheduleDisplay';
 import PanelsDisplay from '../components/PanelsDisplay';
 import TeamDisplay from '../components/TeamDisplay';
+import AchievementsList from '../components/AchievementsList';
+import UserStatsCard from '../components/UserStatsCard';
+import ActivityFeed from '../components/ActivityFeed';
 import './Profile.css';
 
 const Profile = () => {
@@ -449,6 +452,18 @@ const Profile = () => {
           >
             Chat
           </button>
+          <button 
+            className={`channel-nav-item ${activeTab === 'achievements' ? 'active' : ''}`}
+            onClick={() => setActiveTab('achievements')}
+          >
+            Achievements
+          </button>
+          <button 
+            className={`channel-nav-item ${activeTab === 'activity' ? 'active' : ''}`}
+            onClick={() => setActiveTab('activity')}
+          >
+            Activity
+          </button>
         </div>
       </div>
 
@@ -457,6 +472,8 @@ const Profile = () => {
         {activeTab === 'home' && (
           <div className="channel-tab-content">
             <div className="channel-section">
+              <UserStatsCard userId={profile.id} isOwnProfile={isOwnProfile} />
+              
               <h2>About {profile.displayName || profile.username}</h2>
               <div className="about-card">
                 {profile.bio && (
@@ -496,6 +513,10 @@ const Profile = () => {
                     </div>
                   )}
                 </div>
+              </div>
+              
+              <div style={{ marginTop: '20px' }}>
+                <ActivityFeed userId={profile.id} limit={5} />
               </div>
             </div>
           </div>
@@ -588,6 +609,22 @@ const Profile = () => {
               <div className="empty-state">
                 <p>No videos available yet.</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'achievements' && (
+          <div className="channel-tab-content">
+            <div className="channel-section">
+              <AchievementsList userId={profile.id} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'activity' && (
+          <div className="channel-tab-content">
+            <div className="channel-section">
+              <ActivityFeed userId={profile.id} limit={20} />
             </div>
           </div>
         )}
