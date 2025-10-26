@@ -628,7 +628,7 @@ const StreamView = () => {
                   <span className="kick-streamer-name" onClick={() => navigate(`/profile/${stream.streamerUsername}`)}>
                     {stream.streamerUsername}
                     {stream.streamer?.isPartner && (
-                      <CheckCircle size={14} color="#53fc18" fill="#53fc18" />
+                      <CheckCircle size={14} color="#00d9ff" fill="#00d9ff" />
                     )}
                   </span>
                   <span className="kick-stream-category">{stream.category || 'Just Chatting'}</span>
