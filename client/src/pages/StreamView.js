@@ -527,16 +527,16 @@ const StreamView = () => {
                 >
                   <div className="kick-sidebar-channel-avatar">
                     {stream.streamer?.avatar ? (
-                      <img src={stream.streamer.avatar} alt={stream.streamerUsername} />
+                      <img src={stream.streamer.avatar} alt={stream.streamer?.username || 'Streamer'} />
                     ) : (
                       <div className="kick-sidebar-channel-avatar-placeholder">
-                        {stream.streamerUsername[0].toUpperCase()}
+                        {(stream.streamer?.username || stream.streamerUsername || 'S')[0].toUpperCase()}
                       </div>
                     )}
                     <div className="kick-sidebar-live-badge">LIVE</div>
                   </div>
                   <div className="kick-sidebar-channel-info">
-                    <div className="kick-sidebar-channel-name">{stream.streamerUsername}</div>
+                    <div className="kick-sidebar-channel-name">{stream.streamer?.username || stream.streamerUsername || 'Unknown'}</div>
                     <div className="kick-sidebar-channel-category">{stream.category || 'Just Chatting'}</div>
                   </div>
                 </div>
@@ -562,16 +562,16 @@ const StreamView = () => {
                 >
                   <div className="kick-sidebar-channel-avatar">
                     {stream.streamer?.avatar ? (
-                      <img src={stream.streamer.avatar} alt={stream.streamerUsername} />
+                      <img src={stream.streamer.avatar} alt={stream.streamer?.username || 'Streamer'} />
                     ) : (
                       <div className="kick-sidebar-channel-avatar-placeholder">
-                        {stream.streamerUsername[0].toUpperCase()}
+                        {(stream.streamer?.username || stream.streamerUsername || 'S')[0].toUpperCase()}
                       </div>
                     )}
                     <div className="kick-sidebar-live-badge">LIVE</div>
                   </div>
                   <div className="kick-sidebar-channel-info">
-                    <div className="kick-sidebar-channel-name">{stream.streamerUsername}</div>
+                    <div className="kick-sidebar-channel-name">{stream.streamer?.username || stream.streamerUsername || 'Unknown'}</div>
                     <div className="kick-sidebar-channel-category">{stream.category || 'Just Chatting'}</div>
                   </div>
                 </div>
