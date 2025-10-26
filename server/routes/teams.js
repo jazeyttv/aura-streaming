@@ -63,8 +63,24 @@ router.post('/create', auth, async (req, res) => {
     
     // Check if user is partner
     const user = await User.findById(req.userId);
-    if (!user || !user.isPartner) {
-      return res.status(403).json({ error: 'Only partners can create teams' });
+    
+    console.log(`[TEAM CREATE] User ${user?.username} attempting to create team`);
+    console.log(`[TEAM CREATE] User isPartner: ${user?.isPartner}, isAffiliate: ${user?.isAffiliate}`);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    if (!user.isPartner && !user.isAffiliate) {
+      return res.status(403).json({ 
+        error: 'Only verified partners and affiliates can create teams',
+        debug: {
+          userId: user._id,
+          username: user.username,
+          isPartner: user.isPartner,
+          isAffiliate: user.isAffiliate
+        }
+      });
     }
     
     // Check if user already owns a team

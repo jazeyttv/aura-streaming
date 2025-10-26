@@ -260,7 +260,7 @@ const Settings = () => {
               <span>Privacy</span>
             </button>
 
-            {user?.isPartner && (
+            {(user?.isPartner || user?.isAffiliate) && (
               <button
                 className={`settings-nav-item ${activeTab === 'team' ? 'active' : ''}`}
                 onClick={() => setActiveTab('team')}

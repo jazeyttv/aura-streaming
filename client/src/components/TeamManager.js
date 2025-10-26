@@ -188,13 +188,13 @@ const TeamManager = () => {
     }
   };
 
-  if (!user?.isPartner) {
+  if (!user?.isPartner && !user?.isAffiliate) {
     return (
       <div className="team-manager">
         <div className="partner-required">
           <Crown size={48} />
-          <h3>Partner Status Required</h3>
-          <p>Only verified partners can create and manage teams.</p>
+          <h3>Partner or Affiliate Status Required</h3>
+          <p>Only verified partners and affiliates can create and manage teams.</p>
         </div>
       </div>
     );
@@ -241,7 +241,7 @@ const TeamManager = () => {
                 value={teamData.name}
                 onChange={(e) => setTeamData({ ...teamData, name: e.target.value })}
                 placeholder="team-name"
-                pattern="[a-zA-Z0-9_-]+"
+                pattern="[a-zA-Z0-9_\-]+"
                 minLength={3}
                 maxLength={30}
                 required
