@@ -607,17 +607,20 @@ const StreamView = () => {
           <div className="kick-stream-header">
             {/* Streamer Info */}
             <div className="kick-streamer-info">
-              {stream.streamer?.avatar ? (
-                <img 
-                  src={stream.streamer.avatar}
-                  alt={stream.streamerUsername}
-                  className="kick-streamer-avatar-large"
-                />
-              ) : (
-                <div className="kick-streamer-avatar-placeholder-large">
-                  {stream.streamerUsername[0].toUpperCase()}
-                </div>
-              )}
+              <div className="kick-streamer-avatar-container">
+                {stream.streamer?.avatar ? (
+                  <img 
+                    src={stream.streamer.avatar}
+                    alt={stream.streamerUsername}
+                    className="kick-streamer-avatar-large"
+                  />
+                ) : (
+                  <div className="kick-streamer-avatar-placeholder-large">
+                    {stream.streamerUsername[0].toUpperCase()}
+                  </div>
+                )}
+                <div className="kick-streamer-live-badge">LIVE</div>
+              </div>
               
               <div className="kick-streamer-details">
                 <h1 className="kick-stream-title">{stream.title}</h1>
