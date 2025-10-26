@@ -7,11 +7,12 @@ import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
 import UserCard from '../components/UserCard';
 import ModTools from '../components/ModTools';
-import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
+import KickLayout from '../components/KickLayout';
+import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag, ChevronDown, ChevronUp, Trophy, Users } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
 import ReportModal from '../components/ReportModal';
 import ConfirmModal from '../components/ConfirmModal';
-import './StreamView.css';
+import './KickStreamView.css';
 
 const StreamView = () => {
   const { streamId } = useParams();
@@ -448,26 +449,27 @@ const StreamView = () => {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <div className="loading">
-          <div className="spinner"></div>
+      <KickLayout>
+        <div className="kick-stream-loading">
+          <div className="kick-loading-spinner"></div>
         </div>
-      </div>
+      </KickLayout>
     );
   }
 
   if (!stream) {
     return (
-      <div className="page-container">
-        <div className="container">
-          <div className="error-message">Stream not found</div>
+      <KickLayout>
+        <div className="kick-stream-loading">
+          <div style={{ color: '#efeff1', textAlign: 'center' }}>Stream not found</div>
         </div>
-      </div>
+      </KickLayout>
     );
   }
 
   return (
-    <div className="page-container stream-view-page">
+    <KickLayout showChat={true}>
+      <div className="kick-stream-page">
       {/* Left Sidebar - Following (like Kick) */}
       <aside className="stream-left-sidebar">
         <div className="sidebar-header">
