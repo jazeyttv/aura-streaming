@@ -357,9 +357,16 @@
 }
 
 .kick-follow-btn.following {
-  background: #53fc18;
-  color: #000;
-  border: none;
+  background: #18181b;
+  color: #adadb8;
+  border: 1px solid #2a2a2e;
+}
+
+.kick-follow-btn.following:hover {
+  background: #2a2a2e;
+  color: #efeff1;
+  border-color: #53fc18;
+  transform: translateY(-2px);
 }
 
 .kick-subscribe-btn {
