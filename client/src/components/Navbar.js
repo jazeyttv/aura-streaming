@@ -88,7 +88,7 @@ const Navbar = () => {
 
   const clearAll = async () => {
     try {
-      await axios.delete('/api/notifications/clear');
+      await axios.delete('/api/notifications/clear-all');
       setNotifications([]);
       setUnreadCount(0);
     } catch (error) {
