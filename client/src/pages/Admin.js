@@ -221,6 +221,19 @@ const Admin = () => {
     }
   };
 
+  const handleGlobalUnban = async (userId, username) => {
+    if (!window.confirm(`Unban ${username} from ALL streams?\n\nThis will remove them from all stream-specific bans.`)) return;
+
+    try {
+      const response = await axios.post(`/api/admin/users/${userId}/global-unban`);
+      await fetchUsers();
+      alert(`✅ ${username} unbanned from ${response.data.unbannedFromStreams} streams!`);
+    } catch (error) {
+      console.error('Error globally unbanning user:', error);
+      alert('Failed to globally unban user');
+    }
+  };
+
   const handleChatBan = async (userId) => {
     const reason = prompt('Chat ban reason (optional):');
     if (reason === null) return;
@@ -882,6 +895,15 @@ const Admin = () => {
                             ✅
                           </button>
                         )}
+
+                        {/* Global Stream Unban */}
+                        <button
+                          className="btn-action global-unban"
+                          onClick={() => handleGlobalUnban(u.id || u._id, u.username)}
+                          title="Unban from ALL Streams"
+                        >
+                          🌍
+                        </button>
 
                         {/* Delete User */}
                         {u.role !== 'admin' && (

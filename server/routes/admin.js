@@ -1148,5 +1148,33 @@ router.post('/regenerate-all-stream-keys', authMiddleware, adminMiddleware, asyn
   }
 });
 
+// Global Unban - Unban user from ALL streams (admin only)
+router.post('/users/:userId/global-unban', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Unban from all streams in global.bannedUsers
+    let unbannedFromStreams = 0;
+    if (global.bannedUsers) {
+      for (const [streamId, bannedSet] of global.bannedUsers.entries()) {
+        if (bannedSet.has(userId)) {
+          bannedSet.delete(userId);
+          unbannedFromStreams++;
+        }
+      }
+    }
+
+    console.log(`✅ GLOBAL UNBAN: User ${userId} unbanned from ${unbannedFromStreams} streams`);
+
+    res.json({ 
+      message: 'User unbanned from all streams successfully',
+      unbannedFromStreams
+    });
+  } catch (error) {
+    console.error('Global unban error:', error);
+    res.status(500).json({ message: 'Failed to unban user globally' });
+  }
+});
+
 module.exports = router;
 
