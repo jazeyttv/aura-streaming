@@ -9,11 +9,30 @@ const authRoutes = require('./auth');
 // Get environment variables
 const PUBLIC_IP = process.env.PUBLIC_IP || 'localhost';
 const HTTP_MEDIA_PORT = process.env.HTTP_MEDIA_PORT || '8888';
-// Use MEDIA_URL from environment if set (for production/Render), otherwise construct it
-const MEDIA_URL = process.env.MEDIA_URL || `http://${PUBLIC_IP}:${HTTP_MEDIA_PORT}`;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-console.log('[STREAMS] Media URL configured as:', MEDIA_URL);
-console.log('[STREAMS] Using environment MEDIA_URL:', !!process.env.MEDIA_URL);
+// Determine API server URL
+let API_SERVER;
+if (process.env.API_SERVER) {
+  API_SERVER = process.env.API_SERVER;
+} else if (NODE_ENV === 'production') {
+  API_SERVER = 'https://aura-streaming.onrender.com';
+} else {
+  API_SERVER = `http://localhost:${process.env.PORT || 5000}`;
+}
+
+// Determine media URL - use HLS proxy for HTTPS production, direct HTTP for local
+let MEDIA_URL;
+if (NODE_ENV === 'production' && API_SERVER.includes('render.com')) {
+  MEDIA_URL = `${API_SERVER}/api/hls-proxy`;
+  console.log('[STREAMS] 🔒 Using HTTPS HLS Proxy for production:', MEDIA_URL);
+} else {
+  MEDIA_URL = process.env.MEDIA_URL || `http://${PUBLIC_IP}:${HTTP_MEDIA_PORT}`;
+  console.log('[STREAMS] 🔓 Using direct HTTP media URL:', MEDIA_URL);
+}
+
+console.log('[STREAMS] NODE_ENV:', NODE_ENV);
+console.log('[STREAMS] API_SERVER:', API_SERVER);
 console.log('[STREAMS] PUBLIC_IP:', PUBLIC_IP);
 console.log('[STREAMS] HTTP_MEDIA_PORT:', HTTP_MEDIA_PORT);
 
