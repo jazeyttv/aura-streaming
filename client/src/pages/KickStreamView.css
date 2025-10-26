@@ -218,7 +218,7 @@
 }
 
 .kick-stream-info-section {
-  padding: 20px 24px;
+  padding: 60px 24px 20px 24px;
   border-bottom: 1px solid #1f1f23;
 }
 
@@ -380,15 +380,15 @@
 }
 
 .kick-follow-btn.following {
-  background: #18181b;
-  color: #adadb8;
-  border: 1px solid #2a2a2e;
+  background: #18181b !important;
+  color: #adadb8 !important;
+  border: 1px solid #2a2a2e !important;
 }
 
 .kick-follow-btn.following:hover {
-  background: #2a2a2e;
-  color: #efeff1;
-  border-color: #53fc18;
+  background: #2a2a2e !important;
+  color: #efeff1 !important;
+  border-color: #53fc18 !important;
   transform: translateY(-2px);
 }
 
