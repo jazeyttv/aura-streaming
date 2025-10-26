@@ -520,15 +520,93 @@
   font-size: 14px;
 }
 
-/* Chat Input - Kick Style */
-.kick-chat-input-container {
-  padding: 12px;
-  border-top: 1px solid #1f1f23;
+.kick-chat-message.system {
+  color: #adadb8;
+  font-style: italic;
+  opacity: 0.8;
 }
 
+/* Moderator Actions */
+.kick-chat-mod-actions {
+  display: none;
+  gap: 4px;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.kick-chat-message:hover .kick-chat-mod-actions {
+  display: flex;
+}
+
+.kick-btn-mod-action {
+  width: 24px;
+  height: 24px;
+  background: #18181b;
+  border: 1px solid #1f1f23;
+  border-radius: 4px;
+  color: #adadb8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.kick-btn-mod-action:hover {
+  background: #2a2a2e;
+  color: #efeff1;
+  border-color: #53fc18;
+}
+
+.kick-btn-mod-action.danger:hover {
+  background: #ff0000;
+  border-color: #ff0000;
+  color: #fff;
+}
+
+/* Role Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-right: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-admin {
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  color: #fff;
+}
+
+.badge-moderator {
+  background: linear-gradient(135deg, #53fc18, #00d9ff);
+  color: #000;
+}
+
+.badge-partner {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+}
+
+.badge-streamer {
+  background: linear-gradient(135deg, #9146ff, #772ce8);
+  color: #fff;
+}
+
+/* Chat Input - Kick Style */
 .kick-chat-input-form {
   display: flex;
   gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #1f1f23;
+  background-color: #0e0e10;
 }
 
 .kick-chat-input {

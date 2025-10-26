@@ -7,8 +7,7 @@ import config from '../config';
 import HLSPlayer from '../components/HLSPlayer';
 import UserCard from '../components/UserCard';
 import ModTools from '../components/ModTools';
-import KickLayout from '../components/KickLayout';
-import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag, ChevronDown, ChevronUp, Trophy, Users } from 'lucide-react';
+import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag, ChevronDown, ChevronUp, Trophy, Users, Crown } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
 import ReportModal from '../components/ReportModal';
 import ConfirmModal from '../components/ConfirmModal';
@@ -449,312 +448,293 @@ const StreamView = () => {
 
   if (loading) {
     return (
-      <KickLayout>
-        <div className="kick-stream-loading">
-          <div className="kick-loading-spinner"></div>
-        </div>
-      </KickLayout>
+      <div className="kick-stream-loading">
+        <div className="kick-loading-spinner"></div>
+      </div>
     );
   }
 
   if (!stream) {
     return (
-      <KickLayout>
-        <div className="kick-stream-loading">
-          <div style={{ color: '#efeff1', textAlign: 'center' }}>Stream not found</div>
-        </div>
-      </KickLayout>
+      <div className="kick-stream-loading">
+        <div style={{ color: '#efeff1', textAlign: 'center' }}>Stream not found</div>
+      </div>
     );
   }
 
   return (
-    <KickLayout showChat={true}>
-      <div className="kick-stream-page">
-      {/* Left Sidebar - Following (like Kick) */}
-      <aside className="stream-left-sidebar">
-        <div className="sidebar-header">
-          <Heart size={16} />
-          <h3>Following</h3>
+    <div className="kick-stream-page">
+      {/* Main Content - Video Section */}
+      <div className="kick-stream-main">
+        {/* Video Player */}
+        <div className="kick-stream-video-container">
+          <HLSPlayer 
+            streamUrl={stream?.streamUrl}
+            className="kick-video-player"
+          />
         </div>
-        <div className="no-following">
-          <p>Follow channels to see them here when they go live!</p>
-        </div>
-      </aside>
 
-      <div className="stream-layout">
-        <div className="stream-main">
-          <div className="video-container">
-            <HLSPlayer 
-              streamUrl={stream?.streamUrl}
-              className="stream-video"
-            />
-            <div className="video-overlay">
-              <div className="live-badge-overlay">
-                LIVE
-              </div>
-              <div className="viewer-badge">
-                <Eye size={16} />
-                {viewerCount}
-              </div>
-            </div>
-          </div>
-
-          <div className="stream-details-kick">
-            <div className="stream-header-kick">
-              {/* Profile Picture with LIVE Badge */}
-              <div className="streamer-avatar-container">
+        {/* Stream Info Section */}
+        <div className="kick-stream-info-section">
+          <div className="kick-stream-header">
+            {/* Streamer Info */}
+            <div className="kick-streamer-info">
+              {stream.streamer?.avatar ? (
                 <img 
-                  src={stream.streamer?.avatar || `https://ui-avatars.com/api/?name=${stream.streamerUsername}&background=00d9ff&color=fff&size=128`}
+                  src={stream.streamer.avatar}
                   alt={stream.streamerUsername}
-                  className="streamer-avatar-large"
+                  className="kick-streamer-avatar-large"
                 />
-                <div className="live-badge-avatar">LIVE</div>
-              </div>
-
-              {/* Stream Info */}
-              <div className="stream-info-kick">
-                <div className="streamer-name-kick">
-                  {stream.streamerUsername}
-                  {getRoleBadge(
-                    stream.streamer?.role,
-                    false,
-                    stream.streamer?.isPartner
-                  )}
+              ) : (
+                <div className="kick-streamer-avatar-placeholder-large">
+                  {stream.streamerUsername[0].toUpperCase()}
                 </div>
-                <h1 className="stream-title-kick">{stream.title}</h1>
-                <div className="stream-tags-kick">
-                  <span className="stream-tag">{stream.category || 'Just Chatting'}</span>
-                  <span className="stream-tag">English</span>
-                  {stream.streamer?.isPartner && <span className="stream-tag">Partner</span>}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="stream-actions-kick">
-                {user && user.username !== stream.streamerUsername && (
-                  <button
-                    className={`btn-follow-kick ${isFollowing ? 'following' : ''}`}
-                    onClick={handleFollow}
-                  >
-                    <Heart size={18} fill={isFollowing ? 'currentColor' : 'none'} />
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </button>
-                )}
-
-                {user && !isStreamCreator && (
-                  <button
-                    className="btn-report-stream"
-                    onClick={() => setShowReportModal(true)}
-                    title="Report stream"
-                  >
-                    <Flag size={18} />
-                  </button>
-                )}
-                {stream.streamer?.isAffiliate && (
-                  <button className="btn-gift-kick" title="Gift Subs">
-                    <Gift size={18} />
-                    Gift Subs
-                  </button>
-                )}
-                <button className="btn-subscribe-kick" title="Subscribe">
-                  Subscribe
-                </button>
-                <div className="stream-stats-kick">
-                  <Eye size={16} />
-                  <span>{viewerCount} Viewers</span>
-                </div>
-              </div>
-            </div>
-            {stream.description && (
-              <p className="stream-description-kick">{stream.description}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="chat-container">
-          <div className="chat-header">
-            <h3>Stream Chat</h3>
-            <div className="chat-controls">
-              {isModerator && (
-                <button 
-                  className={`btn-icon-small ${slowMode.enabled ? 'active' : ''}`}
-                  onClick={toggleSlowMode}
-                  title="Toggle Slow Mode"
-                >
-                  <Shield size={16} />
-                </button>
               )}
-              {(isAdmin || isStreamCreator) && (
-                <button 
-                  className="btn-icon-small unban"
-                  onClick={handleUnbanUser}
-                  title="Unban User"
-                >
-                  <Ban size={16} style={{ transform: 'rotate(45deg)' }} />
-                </button>
-              )}
-              <div className="chat-viewer-count">
-                <Eye size={16} />
-                {viewerCount}
-              </div>
-            </div>
-          </div>
-
-          {/* Leaderboard */}
-          <div className="chat-leaderboard">
-            <div 
-              className="leaderboard-header"
-              onClick={() => setLeaderboardCollapsed(!leaderboardCollapsed)}
-            >
-              <div className="leaderboard-title">
-                <Trophy size={16} />
-                <span>Top Watchers</span>
-                {leaderboard.length > 0 && (
-                  <span className="leaderboard-count">{leaderboard.length}</span>
-                )}
-              </div>
-              <button className="leaderboard-collapse-btn">
-                {leaderboardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-              </button>
-            </div>
-            
-            {!leaderboardCollapsed && (
-              <div className="leaderboard-content">
-                {leaderboard.length === 0 ? (
-                  <div className="leaderboard-empty">
-                    <Trophy size={24} style={{ opacity: 0.3 }} />
-                    <p>No viewers yet</p>
-                    <span>Watch time will appear here</span>
+              
+              <div className="kick-streamer-details">
+                <h1 className="kick-stream-title">{stream.title}</h1>
+                <div className="kick-streamer-name-row">
+                  <span className="kick-streamer-name" onClick={() => navigate(`/profile/${stream.streamerUsername}`)}>
+                    {stream.streamerUsername}
+                    {stream.streamer?.isPartner && (
+                      <CheckCircle size={14} color="#53fc18" fill="#53fc18" />
+                    )}
+                  </span>
+                  <span className="kick-stream-category">{stream.category || 'Just Chatting'}</span>
+                </div>
+                <div className="kick-stream-stats">
+                  <div className="kick-viewer-count">
+                    <Eye size={14} />
+                    {viewerCount}
                   </div>
-                ) : (
-                  leaderboard.map((viewer, index) => (
-                    <div 
-                      key={index} 
-                      className={`leaderboard-item ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : ''}`}
-                    >
-                      <div className="leaderboard-rank">#{index + 1}</div>
-                      <div 
-                        className="leaderboard-user"
-                        onClick={() => setSelectedUsername(viewer.username)}
-                      >
-                        {viewer.avatar ? (
-                          <img 
-                            src={viewer.avatar} 
-                            alt={viewer.displayName} 
-                            className="leaderboard-avatar"
-                          />
-                        ) : (
-                          <div className="leaderboard-avatar-placeholder">
-                            {viewer.displayName[0].toUpperCase()}
-                          </div>
-                        )}
-                        <span className="leaderboard-username">{viewer.displayName}</span>
-                        {viewer.isPartner && (
-                          <CheckCircle size={12} color="#00d9ff" style={{ marginLeft: '4px' }} />
-                        )}
-                      </div>
-                      <div className="leaderboard-time">{viewer.watchTimeFormatted}</div>
-                    </div>
-                  ))
-                )}
+                  <div className="kick-follower-count">
+                    <Users size={14} />
+                    {followerCount} Followers
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="kick-stream-actions">
+              {user && user.username !== stream.streamerUsername && (
+                <button
+                  className={`kick-follow-btn ${isFollowing ? 'following' : ''}`}
+                  onClick={handleFollow}
+                >
+                  <Heart size={18} fill={isFollowing ? 'currentColor' : 'none'} />
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
+              <button className="kick-subscribe-btn">
+                <Gift size={18} />
+                Subscribe
+              </button>
+              {user && !isStreamCreator && (
+                <button
+                  className="kick-action-icon-btn"
+                  onClick={() => setShowReportModal(true)}
+                  title="Report stream"
+                >
+                  <Flag size={18} />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="chat-messages">
-            {chatMessages.length === 0 ? (
-              <div className="chat-empty">
-                <p>Be the first to chat!</p>
-              </div>
-            ) : (
-              <>
-                {chatMessages.map((msg) => {
-                  const isMessageFromStreamer = stream && (msg.userId === stream.streamer._id || msg.userId === stream.streamer);
-                  const isChannelMod = user && channelMods.includes(user.id);
-                  const canModerate = (isModerator || isStreamCreator || isChannelMod) && msg.userRole !== 'system' && msg.userRole !== 'error';
-                  const canBan = (isAdmin || isStreamCreator || isChannelMod) && msg.userId !== user?.id;
-                  
-                  return (
-                    <div 
-                      key={msg.id} 
-                      className={`chat-message ${msg.userRole === 'system' ? 'system-message' : ''}`}
-                    >
-                      <span 
-                        className="chat-username clickable-username" 
-                        style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}
-                        onClick={() => {
-                          if (canModerate && msg.userRole !== 'system' && msg.userRole !== 'error') {
-                            setModTargetUser({ _id: msg.userId, username: msg.username });
-                            setShowModTools(true);
-                          } else {
-                            setSelectedUsername(msg.username);
-                          }
-                        }}
-                      >
-                        {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge, msg.userId)}
-                        {msg.username}
-                      </span>
-                      <span className="chat-separator">: </span>
-                      <span className="chat-text">{msg.message}</span>
-                      {canModerate && (
-                        <div className="chat-mod-actions">
-                          <button 
-                            className="btn-mod-action"
-                            onClick={() => handleDeleteMessage(msg.id)}
-                            title="Delete Message"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                          {canBan && msg.userRole !== 'admin' && (
-                            <>
-                              <button 
-                                className="btn-mod-action"
-                                onClick={() => handleBanUser(msg.userId, msg.username, 300)}
-                                title="Timeout 5min"
-                              >
-                                <Ban size={14} />
-                              </button>
-                              {isAdmin && (
-                                <button 
-                                  className="btn-mod-action ban"
-                                  onClick={() => handleBanUser(msg.userId, msg.username, 0)}
-                                  title="Permanent Ban"
-                                >
-                                  <Ban size={14} />
-                                </button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                <div ref={chatEndRef} />
-              </>
-            )}
-          </div>
-
-          <form className="chat-input-form" onSubmit={handleSendMessage}>
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder={user ? (slowMode.enabled ? `Slow mode: ${slowMode.seconds}s` : 'Send a message...') : 'Login to chat'}
-              disabled={!user}
-              className="chat-input"
-              maxLength={500}
-            />
-            <button 
-              type="submit" 
-              className="chat-send-btn"
-              disabled={!user || !messageInput.trim()}
-            >
-              <Send size={20} />
-            </button>
-          </form>
+          {/* Description */}
+          {stream.description && (
+            <div className="kick-stream-description">
+              <p className="kick-description-text">{stream.description}</p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Chat Sidebar - Kick Style */}
+      <div className="kick-chat-sidebar">
+        {/* Chat Header */}
+        <div className="kick-chat-header">
+          <h3 className="kick-chat-title">Chat</h3>
+          <div className="kick-chat-controls">
+            {isModerator && (
+              <button 
+                className={`kick-chat-icon-btn ${slowMode.enabled ? 'active' : ''}`}
+                onClick={toggleSlowMode}
+                title="Toggle Slow Mode"
+              >
+                <Shield size={16} />
+              </button>
+            )}
+            {(isAdmin || isStreamCreator) && (
+              <button 
+                className="kick-chat-icon-btn"
+                onClick={handleUnbanUser}
+                title="Unban User"
+              >
+                <Ban size={16} />
+              </button>
+            )}
+            <div className="kick-chat-icon-btn">
+              <Eye size={16} />
+            </div>
+          </div>
+        </div>
+
+        {/* Weekly Top Gifters - Like Kick */}
+        <div className="kick-chat-leaderboard">
+          <div 
+            className="kick-leaderboard-header"
+            onClick={() => setLeaderboardCollapsed(!leaderboardCollapsed)}
+          >
+            <div className="kick-leaderboard-title">
+              <Crown size={16} />
+              <span>Weekly top Gifters</span>
+              {leaderboard.length > 0 && (
+                <span className="kick-leaderboard-count">{leaderboard.length}</span>
+              )}
+            </div>
+            <button className="kick-chat-icon-btn">
+              {leaderboardCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            </button>
+          </div>
+          
+          {!leaderboardCollapsed && (
+            <div className="kick-leaderboard-content">
+              {leaderboard.length === 0 ? (
+                <div className="kick-leaderboard-empty">
+                  <Crown size={24} />
+                  <p>No top gifters yet</p>
+                  <span>Top gifters will appear here</span>
+                </div>
+              ) : (
+                leaderboard.map((viewer, index) => (
+                  <div 
+                    key={index} 
+                    className={`kick-leaderboard-item ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : ''}`}
+                  >
+                    <div className="kick-leaderboard-rank">#{index + 1}</div>
+                    <div 
+                      className="kick-leaderboard-user"
+                      onClick={() => setSelectedUsername(viewer.username)}
+                    >
+                      {viewer.avatar ? (
+                        <img 
+                          src={viewer.avatar} 
+                          alt={viewer.displayName} 
+                          className="kick-leaderboard-avatar"
+                        />
+                      ) : (
+                        <div className="kick-leaderboard-avatar-placeholder">
+                          {viewer.displayName[0].toUpperCase()}
+                        </div>
+                      )}
+                      <span className="kick-leaderboard-username">{viewer.displayName}</span>
+                    </div>
+                    <div className="kick-leaderboard-time">{viewer.watchTimeFormatted}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Chat Messages */}
+        <div className="kick-chat-messages">
+          {chatMessages.length === 0 ? (
+            <div className="kick-chat-empty">
+              <p>Welcome to the chat!</p>
+            </div>
+          ) : (
+            <>
+              {chatMessages.map((msg) => {
+                const isMessageFromStreamer = stream && (msg.userId === stream.streamer._id || msg.userId === stream.streamer);
+                const isChannelMod = user && channelMods.includes(user.id);
+                const canModerate = (isModerator || isStreamCreator || isChannelMod) && msg.userRole !== 'system' && msg.userRole !== 'error';
+                const canBan = (isAdmin || isStreamCreator || isChannelMod) && msg.userId !== user?.id;
+                
+                return (
+                  <div 
+                    key={msg.id} 
+                    className={`kick-chat-message ${msg.userRole === 'system' ? 'system' : ''}`}
+                  >
+                    {getRoleBadge(msg.userRole, isMessageFromStreamer, msg.isPartner, msg.selectedBadge, msg.userId)}
+                    <span 
+                      className="kick-chat-username" 
+                      style={{ color: msg.chatColor || getRoleColor(msg.userRole) }}
+                      onClick={() => {
+                        if (canModerate && msg.userRole !== 'system' && msg.userRole !== 'error') {
+                          setModTargetUser({ _id: msg.userId, username: msg.username });
+                          setShowModTools(true);
+                        } else {
+                          setSelectedUsername(msg.username);
+                        }
+                      }}
+                    >
+                      {msg.username}
+                    </span>
+                    <span className="kick-chat-separator">: </span>
+                    <span className="kick-chat-text">{msg.message}</span>
+                    {canModerate && (
+                      <div className="kick-chat-mod-actions">
+                        <button 
+                          className="kick-btn-mod-action"
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          title="Delete Message"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                        {canBan && msg.userRole !== 'admin' && (
+                          <>
+                            <button 
+                              className="kick-btn-mod-action"
+                              onClick={() => handleBanUser(msg.userId, msg.username, 300)}
+                              title="Timeout 5min"
+                            >
+                              <Ban size={12} />
+                            </button>
+                            {isAdmin && (
+                              <button 
+                                className="kick-btn-mod-action danger"
+                                onClick={() => handleBanUser(msg.userId, msg.username, 0)}
+                                title="Permanent Ban"
+                              >
+                                <Ban size={12} />
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <div ref={chatEndRef} />
+            </>
+          )}
+        </div>
+
+        {/* Chat Input */}
+        <form className="kick-chat-input-form" onSubmit={handleSendMessage}>
+          <input
+            type="text"
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            placeholder={user ? (slowMode.enabled ? `Slow mode: ${slowMode.seconds}s` : 'Send a message...') : 'Login to chat'}
+            disabled={!user}
+            className="kick-chat-input"
+            maxLength={500}
+          />
+          <button 
+            type="submit" 
+            className="kick-chat-send-btn"
+            disabled={!user || !messageInput.trim()}
+          >
+            <Send size={18} />
+          </button>
+        </form>
+      </div>
+    </div>
 
       {/* User Card Modal */}
       {selectedUsername && (
