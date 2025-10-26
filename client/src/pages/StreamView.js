@@ -464,6 +464,23 @@ const StreamView = () => {
 
   return (
     <div className="kick-stream-page">
+      {/* Left Sidebar - Following & Recommended */}
+      <aside className="kick-stream-left-sidebar">
+        <div className="kick-sidebar-section">
+          <h4 className="kick-sidebar-title">Following</h4>
+          <div className="kick-sidebar-channels">
+            <p className="kick-sidebar-empty">Follow channels to see them here!</p>
+          </div>
+        </div>
+        
+        <div className="kick-sidebar-section">
+          <h4 className="kick-sidebar-title">Recommended</h4>
+          <div className="kick-sidebar-channels">
+            <p className="kick-sidebar-empty">Loading recommendations...</p>
+          </div>
+        </div>
+      </aside>
+
       {/* Main Content - Video Section */}
       <div className="kick-stream-main">
         {/* Video Player */}

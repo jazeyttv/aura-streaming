@@ -5,6 +5,56 @@
   background-color: #0f0f10;
 }
 
+/* Left Sidebar - Following & Recommended */
+.kick-stream-left-sidebar {
+  width: 240px;
+  background-color: #0e0e10;
+  border-right: 1px solid #1f1f23;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.kick-stream-left-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.kick-stream-left-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kick-stream-left-sidebar::-webkit-scrollbar-thumb {
+  background: #2a2a2e;
+  border-radius: 3px;
+}
+
+.kick-sidebar-section {
+  margin-bottom: 24px;
+}
+
+.kick-sidebar-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #adadb8;
+  padding: 0 16px;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.kick-sidebar-channels {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kick-sidebar-empty {
+  font-size: 13px;
+  color: #53535f;
+  padding: 8px 16px;
+  margin: 0;
+  text-align: center;
+}
+
 .kick-stream-main {
   flex: 1;
   display: flex;
@@ -692,9 +742,17 @@
   .kick-chat-sidebar {
     width: 300px;
   }
+  
+  .kick-stream-left-sidebar {
+    width: 200px;
+  }
 }
 
 @media (max-width: 1024px) {
+  .kick-stream-left-sidebar {
+    display: none;
+  }
+  
   .kick-chat-sidebar {
     position: fixed;
     right: -350px;
