@@ -10,6 +10,7 @@ import ModTools from '../components/ModTools';
 import { Eye, Send, Shield, Ban, Trash2, Heart, CheckCircle, Gift, Flag, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { getBadgeById } from '../config/badges';
 import ReportModal from '../components/ReportModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './StreamView.css';
 
 const StreamView = () => {
@@ -33,6 +34,9 @@ const StreamView = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [leaderboardCollapsed, setLeaderboardCollapsed] = useState(false);
+  const [showUnbanModal, setShowUnbanModal] = useState(false);
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [banTarget, setBanTarget] = useState(null);
   
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -328,25 +332,38 @@ const StreamView = () => {
   };
 
   const handleBanUser = (targetUserId, targetUsername, duration = 0) => {
-    if (isModerator && window.confirm(`Ban ${targetUsername}?`)) {
+    if (isModerator) {
+      setBanTarget({ targetUserId, targetUsername, duration });
+      setShowBanModal(true);
+    }
+  };
+
+  const confirmBan = () => {
+    if (banTarget) {
       socketRef.current.emit('ban-user', {
         streamId,
-        targetUserId,
-        targetUsername,
-        duration
+        targetUserId: banTarget.targetUserId,
+        targetUsername: banTarget.targetUsername,
+        duration: banTarget.duration
       });
+      setShowBanModal(false);
+      setBanTarget(null);
     }
   };
 
   const handleUnbanUser = () => {
-    const username = prompt('Enter username to unban:');
-    if (!username) return;
+    setShowUnbanModal(true);
+  };
+
+  const submitUnban = (username) => {
+    if (!username || !username.trim()) return;
     
-    if ((isAdmin || isStreamCreator) && window.confirm(`Unban ${username}?`)) {
+    if (isAdmin || isStreamCreator) {
       socketRef.current.emit('unban-user', {
         streamId,
-        targetUsername: username
+        targetUsername: username.trim()
       });
+      setShowUnbanModal(false);
     }
   };
 
@@ -762,6 +779,32 @@ const StreamView = () => {
           onClose={() => setShowReportModal(false)}
         />
       )}
+
+      {/* Unban User Modal */}
+      <ConfirmModal
+        isOpen={showUnbanModal}
+        onClose={() => setShowUnbanModal(false)}
+        onConfirm={submitUnban}
+        title="Unban User"
+        message="Enter the username of the user you want to unban:"
+        confirmText="Unban"
+        requireInput={true}
+        inputPlaceholder="Username"
+      />
+
+      {/* Ban User Modal */}
+      <ConfirmModal
+        isOpen={showBanModal}
+        onClose={() => {
+          setShowBanModal(false);
+          setBanTarget(null);
+        }}
+        onConfirm={confirmBan}
+        title="Ban User"
+        message={banTarget ? `Are you sure you want to ban ${banTarget.targetUsername}?` : ''}
+        confirmText="Ban"
+        danger={true}
+      />
     </div>
   );
 };
