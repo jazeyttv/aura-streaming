@@ -138,10 +138,7 @@ const HLSPlayer = ({ streamUrl, className = '', poster = '' }) => {
         video.play().catch(() => {});
       });
 
-      // Log when buffering
-      hls.on(Hls.Events.BUFFER_APPENDING, () => {
-        console.log('Buffering data...');
-      });
+      // Log when buffering (removed to reduce console spam)
 
       // Celebrate successful fragment loads
       let fragCount = 0;
