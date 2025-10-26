@@ -146,10 +146,10 @@
 
 .kick-follow-btn {
   padding: 10px 24px;
-  background: linear-gradient(135deg, #53fc18, #00d9ff);
-  border: none;
+  background: #18181b;
+  border: 2px solid #53fc18;
   border-radius: 6px;
-  color: #000;
+  color: #53fc18;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -160,14 +160,15 @@
 }
 
 .kick-follow-btn:hover {
+  background: #53fc18;
+  color: #000;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(83, 252, 24, 0.4);
 }
 
 .kick-follow-btn.following {
   background: #18181b;
   color: #53fc18;
-  border: 1px solid #53fc18;
+  border: 2px solid #53fc18;
 }
 
 .kick-subscribe-btn {
