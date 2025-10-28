@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import axios from 'axios';
 import VersionChecker from './VersionChecker';
 import Navbar from './components/Navbar';
+import NotificationBar from './components/NotificationBar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -52,6 +53,7 @@ function AppContent() {
   return (
     <div className="App">
       <Navbar />
+      <NotificationBar />
       <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

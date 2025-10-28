@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Stream = require('../models/Stream');
 const BanRecord = require('../models/BanRecord');
+const SystemAnnouncement = require('../models/SystemAnnouncement');
 const authMiddleware = require('../middleware/auth');
 const authRoutes = require('./auth');
 const { banIP, unbanIP } = require('../middleware/ipBanCheck');
@@ -1173,6 +1174,177 @@ router.post('/users/:userId/global-unban', authMiddleware, adminMiddleware, asyn
   } catch (error) {
     console.error('Global unban error:', error);
     res.status(500).json({ message: 'Failed to unban user globally' });
+  }
+});
+
+// ========================================
+// SYSTEM ANNOUNCEMENTS
+// ========================================
+
+// Get active announcements
+router.get('/announcements', authMiddleware, async (req, res) => {
+  try {
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      // Return in-memory announcements
+      const announcements = global.systemAnnouncements || [];
+      res.json({ announcements });
+    } else {
+      const announcements = await SystemAnnouncement.find({ active: true })
+        .sort({ createdAt: -1 })
+        .limit(10);
+      res.json({ announcements });
+    }
+  } catch (error) {
+    console.error('Get announcements error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create announcement (admin only)
+router.post('/announcements', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { message, type, duration } = req.body; // duration in minutes, 0 = no expiry
+    
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ message: 'Message is required' });
+    }
+
+    const validTypes = ['info', 'warning', 'success', 'error'];
+    const announcementType = validTypes.includes(type) ? type : 'info';
+
+    const expiresAt = duration > 0 ? new Date(Date.now() + duration * 60000) : null;
+
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    let announcement;
+
+    if (useMemory) {
+      // Create in-memory announcement
+      if (!global.systemAnnouncements) {
+        global.systemAnnouncements = [];
+      }
+
+      announcement = {
+        id: Date.now().toString(),
+        message,
+        type: announcementType,
+        createdBy: req.user.userId,
+        createdByUsername: req.user.username,
+        active: true,
+        expiresAt,
+        createdAt: new Date()
+      };
+
+      global.systemAnnouncements.unshift(announcement);
+      
+      // Keep only last 50 announcements in memory
+      if (global.systemAnnouncements.length > 50) {
+        global.systemAnnouncements = global.systemAnnouncements.slice(0, 50);
+      }
+    } else {
+      // Create in database
+      announcement = new SystemAnnouncement({
+        message,
+        type: announcementType,
+        createdBy: req.user.userId,
+        createdByUsername: req.user.username,
+        active: true,
+        expiresAt
+      });
+
+      await announcement.save();
+    }
+
+    console.log(`📢 ANNOUNCEMENT: ${req.user.username} created: "${message}" (${announcementType})`);
+
+    // Broadcast to all connected clients via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('system-announcement', announcement);
+    }
+
+    res.json({ 
+      message: 'Announcement created successfully',
+      announcement 
+    });
+  } catch (error) {
+    console.error('Create announcement error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete/Deactivate announcement (admin only)
+router.delete('/announcements/:announcementId', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { announcementId } = req.params;
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      if (!global.systemAnnouncements) {
+        return res.status(404).json({ message: 'Announcement not found' });
+      }
+
+      const index = global.systemAnnouncements.findIndex(a => a.id === announcementId);
+      if (index === -1) {
+        return res.status(404).json({ message: 'Announcement not found' });
+      }
+
+      global.systemAnnouncements[index].active = false;
+      
+      console.log(`🗑️ ANNOUNCEMENT: Deactivated announcement ${announcementId}`);
+
+      // Notify all clients to remove this announcement
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('announcement-removed', { announcementId });
+      }
+
+      res.json({ message: 'Announcement deactivated' });
+    } else {
+      const announcement = await SystemAnnouncement.findById(announcementId);
+      
+      if (!announcement) {
+        return res.status(404).json({ message: 'Announcement not found' });
+      }
+
+      announcement.active = false;
+      await announcement.save();
+
+      console.log(`🗑️ ANNOUNCEMENT: Deactivated announcement ${announcementId}`);
+
+      // Notify all clients to remove this announcement
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('announcement-removed', { announcementId: announcementId.toString() });
+      }
+
+      res.json({ message: 'Announcement deactivated' });
+    }
+  } catch (error) {
+    console.error('Delete announcement error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all announcements (admin only) - including inactive
+router.get('/announcements/all', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const useMemory = !global.mongoose || !global.mongoose.connection || global.mongoose.connection.readyState !== 1;
+
+    if (useMemory) {
+      const announcements = global.systemAnnouncements || [];
+      res.json({ announcements });
+    } else {
+      const announcements = await SystemAnnouncement.find()
+        .sort({ createdAt: -1 })
+        .limit(50);
+      res.json({ announcements });
+    }
+  } catch (error) {
+    console.error('Get all announcements error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

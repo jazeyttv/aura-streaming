@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Users, Video, Eye, Shield, Ban, UserCheck, Crown, CheckCircle, Key, Copy, RefreshCw, Trash2, MessageCircle, X, Search, Info, Award, Flag, AlertTriangle } from 'lucide-react';
 import { API_URL } from '../config';
 import { getAllBadges } from '../config/badges';
+import AdminNotificationPanel from '../components/AdminNotificationPanel';
 import './Admin.css';
 
 const Admin = () => {
@@ -595,6 +596,9 @@ const Admin = () => {
             </div>
           )}
         </div>
+
+        {/* System Announcements */}
+        <AdminNotificationPanel />
 
         {/* Users Management */}
         {/* Reports Management */}

@@ -1,0 +1,128 @@
+.notification-bar-container {
+  position: fixed;
+  top: 60px; /* Below navbar */
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.notification-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.notification-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.notification-bar-icon {
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.notification-bar-message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.notification-bar-author {
+  font-size: 12px;
+  opacity: 0.8;
+  font-style: italic;
+  margin-left: 8px;
+}
+
+.notification-bar-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+}
+
+.notification-bar-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Type-specific colors */
+.notification-bar-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.notification-bar-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.notification-bar-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.notification-bar-error {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .notification-bar {
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+
+  .notification-bar-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+  }
+
+  .notification-bar-author {
+    display: none; /* Hide author on mobile to save space */
+  }
+
+  .notification-bar-close {
+    min-width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+}
+

@@ -197,6 +197,7 @@ global.chatMessages = new Map();
 global.streamViewers = new Map();
 global.bannedUsers = new Map();
 global.streamWatchTimes = new Map(); // Track watch time per stream per socket
+global.systemAnnouncements = []; // Store system announcements in memory
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
